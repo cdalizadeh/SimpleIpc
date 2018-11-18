@@ -43,6 +43,11 @@ namespace TcpServer
             {
                 byte[] bytes = new Byte[1024];
                 int bytesRec = s.Receive(bytes);
+                if (bytesRec == 0)
+                {
+                    Console.WriteLine("0 bytes received. Terminating connection");
+                    break;
+                }
                 string data = Encoding.ASCII.GetString(bytes,0,bytesRec);
                 Console.WriteLine("Received: " + data);
             }
