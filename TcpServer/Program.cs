@@ -1,4 +1,5 @@
 ﻿using System;
+using CommandLine;
 
 namespace TcpServer
 {
@@ -6,7 +7,13 @@ namespace TcpServer
     {
         static void Main(string[] args)
         {
-            TcpServer.StartListening();
+            CommandLine.Parser.Default.ParseArguments<CommandLineOptions>(args)
+                .WithParsed<CommandLineOptions>(StartWithOptions);
+        }
+
+        private static void StartWithOptions(CommandLineOptions opts)
+        {
+            TcpServer.StartListening(opts.Port);
         }
     }
 }

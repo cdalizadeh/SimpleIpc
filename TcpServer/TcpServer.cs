@@ -8,11 +8,11 @@ namespace TcpServer
 {
     public class TcpServer
     {
-        public static void StartListening()
+        public static void StartListening(int port)
         {
             IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
             IPAddress ipAddress = ipHostInfo.AddressList[0];
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 11000);
+            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, port);
 
             Socket listener = new Socket(ipAddress.AddressFamily,
                 SocketType.Stream, ProtocolType.Tcp);
@@ -25,10 +25,9 @@ namespace TcpServer
                 Console.WriteLine("Waiting for a connection...");
                 while (true)
                 {
-                    Socket handler = listener.Accept();
-                    Task.Run(() => {HandleConnection(handler);});
+                    Socket socket = listener.Accept();
+                    var connection = new Connection(socket);
                 }
-
             }
             catch (Exception e)
             {
