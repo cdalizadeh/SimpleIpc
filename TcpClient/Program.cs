@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace TcpClient
 {
@@ -6,7 +7,11 @@ namespace TcpClient
     {
         static void Main(string[] args)
         {
-            TcpClient.StartClient();
+            PublisherClient pub = new PublisherClient("pub05");
+            pub.Connect();
+            pub.Send("message1");
+            pub.Send("message2");
+            pub.Dispose();
         }
     }
 }

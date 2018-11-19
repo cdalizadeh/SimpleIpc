@@ -5,7 +5,7 @@ namespace TcpServer
     class CommandLineOptions
     {
         [Option('p', "port", Default = 13001,
-            HelpText = "Prints all messages to standard output.")]
+            HelpText = "The TCP port for the application to communicate over.")]
         public int Port { get; set; }
     }
 }

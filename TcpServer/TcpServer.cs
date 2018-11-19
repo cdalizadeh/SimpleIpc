@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,6 +10,9 @@ namespace TcpServer
 {
     public class TcpServer
     {
+        private static Dictionary<string, Publisher> _publishers = new Dictionary<string, Publisher>();
+        private static List<Subscriber> _subscribers = new List<Subscriber>();
+
         public static void StartListening(int port)
         {
             IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
@@ -26,7 +31,7 @@ namespace TcpServer
                 while (true)
                 {
                     Socket socket = listener.Accept();
-                    var connection = new Connection(socket);
+                    Task.Run(() => HandleConnection(socket));
                 }
             }
             catch (Exception e)
@@ -35,23 +40,40 @@ namespace TcpServer
             }
         }
 
-        public static void HandleConnection(Socket s)
+        private static void HandleConnection(Socket socket)
         {
-            Console.WriteLine("New Connection");
-            while (true)
+            var connection = new Connection(socket);
+            connection.GetNextControlAsync().ContinueWith((t)=>
             {
-                byte[] bytes = new Byte[1024];
-                int bytesRec = s.Receive(bytes);
-                if (bytesRec == 0)
+                if (t.IsCanceled)
                 {
-                    Console.WriteLine("0 bytes received. Terminating connection");
-                    break;
+                    Console.WriteLine("Socket is cancelled");
+                    connection.Dispose();
                 }
-                string data = Encoding.ASCII.GetString(bytes,0,bytesRec);
-                Console.WriteLine("Received: " + data);
-            }
-            s.Shutdown(SocketShutdown.Both);
-            s.Close();
+                else if (t.IsFaulted)
+                {
+                    Console.WriteLine("Socket is in error");
+                    connection.Dispose();
+                }
+                else
+                {
+                    var command = t.Result;
+                    if (command.Control == 'P')
+                    {
+                        var publisherId = command.Data;
+                        _publishers.Add(publisherId, new Publisher(connection));
+                    }
+                    else if (command.Control == 'S')
+                    {
+                        _subscribers.Add(new Subscriber(connection));
+                    }
+                    else
+                    {
+                        Console.WriteLine("Unknown control detected");
+                    }
+                }
+            });
+            connection.StartReceiving();
         }
     }
 }
