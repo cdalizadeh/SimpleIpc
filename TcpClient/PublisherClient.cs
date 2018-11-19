@@ -21,7 +21,7 @@ namespace TcpClient
         {
             EstablishConnection();
             BeginSending();
-            SendControl(ControlBytes.RegisterPublisher);
+            SendControl(ControlBytes.RegisterPublisher, _publisherId);
         }
 
         public void Send(string message)

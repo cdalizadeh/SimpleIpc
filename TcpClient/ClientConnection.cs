@@ -37,7 +37,11 @@ namespace TcpClient
 
         protected void BeginSending()
         {
-            Action<byte[]> onNext = (bytes) => _socket.Send(bytes);
+            Action<byte[]> onNext = (bytes) => 
+            {
+                _socket.Send(bytes);
+                Task.Delay(10).Wait();
+            };
             Action<Exception> onError = (e) => Console.WriteLine("Error in Send stream");
             _sendDataSubject.Subscribe(onNext, onError);
         }
@@ -53,13 +57,15 @@ namespace TcpClient
             if (message != null)
             {
                 List<byte> encodedMessage = Encoding.ASCII.GetBytes(message).ToList();
-                encodedMessage.Prepend((byte)controlByte);
-                encodedMessage.Prepend((byte)ControlBytes.Escape);
-                bytesToSend = encodedMessage.ToArray();
+                bytesToSend = encodedMessage.Prepend((byte)controlByte).Prepend((byte)ControlBytes.Escape).ToArray();
             }
             else
             {
                 bytesToSend = new byte[]{(byte)ControlBytes.Escape, (byte)controlByte};
+            }
+            foreach(var b in bytesToSend)
+            {
+                Console.WriteLine(b);
             }
             _sendDataSubject.OnNext(bytesToSend);
         }

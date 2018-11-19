@@ -18,15 +18,19 @@ namespace TcpClient
 
         public void Connect()
         {
+            Console.WriteLine("starting connect");
             EstablishConnection();
             BeginSending();
             BeginReceiving();
             SendControl(ControlBytes.RegisterSubscriber);
+            Console.WriteLine("ending connect");
         }
 
         public void Subscribe(string publisherId)
         {
+            Console.WriteLine("Starting subscribe");
             SendControl(ControlBytes.Subscribe, publisherId);
+            Console.WriteLine("Ending subscribe");
         }
 
         public void Unsubscribe(string publisherId)

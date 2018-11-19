@@ -6,94 +6,80 @@ using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using log4net;
 
 namespace TcpServer
 {
-    public class Connection : IConnection
+    public abstract class Connection : IDisposable
     {
-        #region private fields
-        private object _syncRoot = new object();
-        private volatile bool _shutdown = false;
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         private Socket _socket;
-        private Subject<ControlCommand> _controlReceivedSubject = new Subject<ControlCommand>();
+        private object _syncRoot = new object();
+        private Subject<string> _sendDataSubject = new Subject<string>();
         private Subject<string> _dataReceivedSubject = new Subject<string>();
-        #endregion
+        private Subject<ControlCommand> _controlReceivedSubject = new Subject<ControlCommand>();
 
-        #region public properties
-        public Socket Socket => _socket;
-        public IObservable<string> DataReceived => (IObservable<string>) _dataReceivedSubject;
-        public IObservable<ControlCommand> ControlReceived => (IObservable<ControlCommand>) _controlReceivedSubject;
-        #endregion
 
-        public Connection(Socket socket)
+        protected volatile bool _shutdown = false;
+        protected IObserver<string> SendData => (IObserver<string>)_sendDataSubject;
+        protected IObservable<string> DataReceived => (IObservable<string>)_dataReceivedSubject;
+        protected IObservable<ControlCommand> ControlReceived => (IObservable<ControlCommand>)_controlReceivedSubject;
+
+        protected Connection(Socket socket)
         {
             _socket = socket;
         }
 
-        public void StartReceiving()
+        protected void BeginSending()
+        {
+            log.Info("Sending enabled");
+            Action<string> onNext = (message) =>
+            {
+                var encodedMsg = Encoding.ASCII.GetBytes(message);
+                _socket.Send(encodedMsg);
+            };
+            Action<Exception> onError = (e) => log.Error("Error in send observable", e);
+            _sendDataSubject.Subscribe(onNext, onError);
+        }
+
+        protected void BeginReceiving()
         {
             Task.Run(() => ReceiveLoop());
         }
 
-        public Task<string> GetNextMessageAsync()
-        {
-            var tcs = new TaskCompletionSource<string>();
-            Action<string> onNext = (s)=>tcs.SetResult(s);
-            Action onCompleted = ()=>tcs.SetCanceled();
-            Action<Exception> onError = (e)=>tcs.SetException(e);
-            
-            DataReceived.Subscribe(onNext, onError, onCompleted);
-            return tcs.Task;
-        }
-
-        public Task<ControlCommand> GetNextControlAsync()
-        {
-            var tcs = new TaskCompletionSource<ControlCommand>();
-            Action<ControlCommand> onNext = (s)=>tcs.SetResult(s);
-            Action onCompleted = ()=>tcs.SetCanceled();
-            Action<Exception> onError = (e)=>tcs.SetException(e);
-            
-            ControlReceived.Subscribe(onNext, onError, onCompleted);
-            return tcs.Task;
-        }
-
-        private void SendLoop()
-        {
-
-        }
-
         private void ReceiveLoop()
         {
+            log.Info("Receiving enabled");
             byte[] bytes;
             int bytesReceived;
 
             while (!_shutdown)
             {
                 bytes = new Byte[1024];
-                lock (_syncRoot)
-                {
-                    bytesReceived = _socket.Receive(bytes);
-                }
+                bytesReceived = _socket.Receive(bytes);
                 if (bytesReceived == 0)
                 {
-                    TerminateConnection("0 bytes received");
+                    log.Warn("Socket connection closed");
                     break;
                 }
                 
-                // Check if escape byte is present
-                if ((int)(bytes[0]) >= 0x80)
+                // Check if escape byte is present.
+                if (bytes[0] == (byte)ControlBytes.Escape)
                 {
+                    log.Debug($"Received control command ({bytes[1]})");
                     // Get control byte.
-                    char control = Encoding.ASCII.GetString(bytes, 1, 1).ToCharArray()[0];
+                    byte control = bytes[1];
                     // Get data.
                     string data = Encoding.ASCII.GetString(bytes, 2, bytesReceived - 2);
                     // Send to observable.
-                    var command = new ControlCommand{Control = control, Data = data};
+                    var command = new ControlCommand{Control = (ControlBytes)control, Data = data};
                     _controlReceivedSubject.OnNext(command);
                 }
                 else
                 {
                     string data = Encoding.ASCII.GetString(bytes, 0, bytesReceived);
+                    log.Debug($"Received data ({data})");
                     _dataReceivedSubject.OnNext(data);
                 }
             }
@@ -106,9 +92,13 @@ namespace TcpServer
                 if (!_shutdown)
                 {
                     _shutdown = true;
-                    Console.WriteLine("Connection shutdown: " + message);
+                    log.Warn($"Connection shutdown ({message})");
                     _socket.Shutdown(SocketShutdown.Both);
                     _socket.Close();
+                    _dataReceivedSubject?.OnCompleted();
+                    _dataReceivedSubject?.Dispose();
+                    _sendDataSubject?.OnCompleted();
+                    _sendDataSubject?.Dispose();
                 }
             }
         }

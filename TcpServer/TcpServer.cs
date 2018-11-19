@@ -1,3 +1,4 @@
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -10,11 +11,15 @@ namespace TcpServer
 {
     public class TcpServer
     {
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static Dictionary<string, Publisher> _publishers = new Dictionary<string, Publisher>();
         private static List<Subscriber> _subscribers = new List<Subscriber>();
 
         public static void StartListening(int port)
         {
+            log.Info("Starting TcpServer");
+            Subscriber.Publishers = _publishers;
+
             IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
             IPAddress ipAddress = ipHostInfo.AddressList[0];
             IPEndPoint localEndPoint = new IPEndPoint(ipAddress, port);
@@ -27,53 +32,54 @@ namespace TcpServer
                 listener.Bind(localEndPoint);
                 listener.Listen(10);
 
-                Console.WriteLine("Waiting for a connection...");
+                log.Info("Waiting for a connection");
                 while (true)
                 {
                     Socket socket = listener.Accept();
-                    Task.Run(() => HandleConnection(socket));
+                    Task.Run(() => HandleNewConnection(socket));
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                log.Error("Failure in TcpServer", e);
             }
         }
 
-        private static void HandleConnection(Socket socket)
+        private static void HandleNewConnection(Socket socket)
         {
-            var connection = new Connection(socket);
-            connection.GetNextControlAsync().ContinueWith((t)=>
+            log.Debug("Handling new connection");
+            byte[] bytes = new Byte[1024];
+            int bytesReceived;
+            bytesReceived = socket.Receive(bytes);
+            if (bytesReceived == 0)
             {
-                if (t.IsCanceled)
+                log.Warn("Socket connection closed");
+                socket.Dispose();
+                return;
+            }
+
+            if (bytes[0] == (byte)ControlBytes.Escape)
+            {
+                if (bytes[1] == (byte)ControlBytes.RegisterPublisher)
                 {
-                    Console.WriteLine("Socket is cancelled");
-                    connection.Dispose();
+                    string publisherId = Encoding.ASCII.GetString(bytes, 2, bytesReceived - 2);
+                    _publishers.Add(publisherId, new Publisher(socket));
+                    log.Info($"New Publisher registered (ID = {publisherId})");
                 }
-                else if (t.IsFaulted)
+                else if (bytes[1] == (byte)ControlBytes.RegisterSubscriber)
                 {
-                    Console.WriteLine("Socket is in error");
-                    connection.Dispose();
+                    _subscribers.Add(new Subscriber(socket));
+                    log.Info("New Subscriber registered");
                 }
                 else
                 {
-                    var command = t.Result;
-                    if (command.Control == 'P')
-                    {
-                        var publisherId = command.Data;
-                        _publishers.Add(publisherId, new Publisher(connection));
-                    }
-                    else if (command.Control == 'S')
-                    {
-                        _subscribers.Add(new Subscriber(connection));
-                    }
-                    else
-                    {
-                        Console.WriteLine("Unknown control detected");
-                    }
+                    log.Error("Non-registration control byte sent in first message");
                 }
-            });
-            connection.StartReceiving();
+            }
+            else
+            {
+                log.Error("Non-escape byte received in first message");
+            }
         }
     }
 }

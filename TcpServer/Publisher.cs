@@ -1,30 +1,26 @@
 using System;
 using System.Net.Sockets;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
+using log4net;
 
 namespace TcpServer
 {
-    class Publisher : Connection, IPublisher
+    class Publisher : Connection
     {
-        public Publisher(Connection connection) : base(connection.Socket)
-        {
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        new public IObservable<string> DataReceived => base.DataReceived;
+
+        public Publisher(Socket socket) : base(socket)
+        {
+            //DataReceived.Subscribe((s) => Console.WriteLine("Thing: " + s));
+            BeginSending();
         }
 
         public void Test()
         {
-            Console.WriteLine("Test");
-            DataReceived.GetHashCode();
-        }
-
-        public void AddSubscriber(ISubscriber s)
-        {
-
-        }
-
-        public void RemoveSubscriber(ISubscriber s)
-        {
-
+            log.Error("Test");
         }
     }
 }
