@@ -8,9 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using log4net;
 
-namespace TcpServer
+namespace PubSubIpc
 {
-    public abstract class Connection : IDisposable
+    public class Connection : IDisposable
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -21,17 +21,17 @@ namespace TcpServer
         private Subject<ControlCommand> _controlReceivedSubject = new Subject<ControlCommand>();
 
 
-        protected volatile bool _shutdown = false;
-        protected IObserver<string> SendData => (IObserver<string>)_sendDataSubject;
-        protected IObservable<string> DataReceived => (IObservable<string>)_dataReceivedSubject;
-        protected IObservable<ControlCommand> ControlReceived => (IObservable<ControlCommand>)_controlReceivedSubject;
+        public volatile bool _shutdown = false;
+        public IObserver<string> SendData => (IObserver<string>)_sendDataSubject;
+        public IObservable<string> DataReceived => (IObservable<string>)_dataReceivedSubject;
+        public IObservable<ControlCommand> ControlReceived => (IObservable<ControlCommand>)_controlReceivedSubject;
 
-        protected Connection(Socket socket)
+        public Connection(Socket socket)
         {
             _socket = socket;
         }
 
-        protected void BeginSending()
+        public void BeginSending()
         {
             log.Info("Sending enabled");
             Action<string> onNext = (message) =>
@@ -43,7 +43,7 @@ namespace TcpServer
             _sendDataSubject.Subscribe(onNext, onError);
         }
 
-        protected void BeginReceiving()
+        public void BeginReceiving()
         {
             Task.Run(() => ReceiveLoop());
         }

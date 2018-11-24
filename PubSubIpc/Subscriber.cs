@@ -4,17 +4,19 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using log4net;
 
-namespace TcpServer
+namespace PubSubIpc
 {
-    class Subscriber : Connection
+    class Subscriber
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         private Dictionary<string, IDisposable> _subscriptions = new Dictionary<string, IDisposable>();
+        private readonly Connection _connection;
 
         public static Dictionary<string, Publisher> Publishers;
 
 
-        public Subscriber(Socket socket) : base(socket)
+        public Subscriber(Connection connection)
         {
             Action<ControlCommand> onNext = (cc) =>
             {
@@ -31,9 +33,9 @@ namespace TcpServer
                     log.Error("Unknown control byte");
                 }
             };
-            ControlReceived.Subscribe(onNext);
-            BeginReceiving();
-            BeginSending();
+            _connection.ControlReceived.Subscribe(onNext);
+            _connection.BeginReceiving();
+            _connection.BeginSending();
         }
 
         public void Subscribe(string publisherId)
@@ -41,7 +43,7 @@ namespace TcpServer
             log.Info($"Subscribing to Publisher ({publisherId})");
             //check if publisher exists
             var publisher = Publishers[publisherId];
-            _subscriptions[publisherId] = publisher.DataReceived.Subscribe((IObserver<string>)SendData);
+            _subscriptions[publisherId] = publisher.DataReceived.Subscribe((IObserver<string>)_connection.SendData);
         }
 
         public void Unsubscribe(string publisherId)

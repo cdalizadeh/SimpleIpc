@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TcpServer", "TcpServer\TcpServer.csproj", "{B2C30BAD-6FFA-4B99-82E8-6114E042A727}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TcpClient", "TcpClient\TcpClient.csproj", "{F86B4795-5D10-4C6B-80DA-782EF5E84D5D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PubSubIpc", "PubSubIpc\PubSubIpc.csproj", "{B2C30BAD-6FFA-4B99-82E8-6114E042A727}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,17 +30,5 @@ Global
 		{B2C30BAD-6FFA-4B99-82E8-6114E042A727}.Release|x64.Build.0 = Release|Any CPU
 		{B2C30BAD-6FFA-4B99-82E8-6114E042A727}.Release|x86.ActiveCfg = Release|Any CPU
 		{B2C30BAD-6FFA-4B99-82E8-6114E042A727}.Release|x86.Build.0 = Release|Any CPU
-		{F86B4795-5D10-4C6B-80DA-782EF5E84D5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F86B4795-5D10-4C6B-80DA-782EF5E84D5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F86B4795-5D10-4C6B-80DA-782EF5E84D5D}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{F86B4795-5D10-4C6B-80DA-782EF5E84D5D}.Debug|x64.Build.0 = Debug|Any CPU
-		{F86B4795-5D10-4C6B-80DA-782EF5E84D5D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{F86B4795-5D10-4C6B-80DA-782EF5E84D5D}.Debug|x86.Build.0 = Debug|Any CPU
-		{F86B4795-5D10-4C6B-80DA-782EF5E84D5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F86B4795-5D10-4C6B-80DA-782EF5E84D5D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F86B4795-5D10-4C6B-80DA-782EF5E84D5D}.Release|x64.ActiveCfg = Release|Any CPU
-		{F86B4795-5D10-4C6B-80DA-782EF5E84D5D}.Release|x64.Build.0 = Release|Any CPU
-		{F86B4795-5D10-4C6B-80DA-782EF5E84D5D}.Release|x86.ActiveCfg = Release|Any CPU
-		{F86B4795-5D10-4C6B-80DA-782EF5E84D5D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

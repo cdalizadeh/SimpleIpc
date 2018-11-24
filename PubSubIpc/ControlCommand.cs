@@ -1,4 +1,4 @@
-namespace TcpServer
+namespace PubSubIpc
 {
     public struct ControlCommand
     {
