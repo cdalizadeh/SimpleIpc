@@ -14,6 +14,7 @@ namespace PubSubIpc.Server
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly int _port;
+        private Socket _listener;
         private Dictionary<string, ServerPublisher> _publishers = new Dictionary<string, ServerPublisher>();
         private List<ServerSubscriber> _subscribers = new List<ServerSubscriber>();
 
@@ -21,6 +22,8 @@ namespace PubSubIpc.Server
         {
             log.Info("Creating new server");
             _port = port;
+
+            ServerSubscriber.Publishers = _publishers;
         }
 
         public void StartListening()
@@ -31,18 +34,23 @@ namespace PubSubIpc.Server
             IPAddress ipAddress = ipHostInfo.AddressList[0];
             IPEndPoint localEndPoint = new IPEndPoint(ipAddress, _port);
 
-            Socket listener = new Socket(ipAddress.AddressFamily,
+            _listener = new Socket(ipAddress.AddressFamily,
                 SocketType.Stream, ProtocolType.Tcp);
             
+            _listener.Bind(localEndPoint);
+            _listener.Listen(10);
+
+            Task.Run(()=>StartReceiveLoop());
+        }
+
+        private void StartReceiveLoop()
+        {
             try
             {
-                listener.Bind(localEndPoint);
-                listener.Listen(10);
-
                 log.Info("Waiting for a connection");
                 while (true)
                 {
-                    Socket socket = listener.Accept();
+                    Socket socket = _listener.Accept();
                     HandleNewConnection(socket);
                 }
             }
@@ -56,15 +64,16 @@ namespace PubSubIpc.Server
         {
             log.Debug("Handling new connection");
             var connection = new Connection(socket);
-            var firstControl = await connection.ControlReceived.ToTask();
-            connection.BeginReceiving();
-            if (firstControl.Control == ControlBytes.RegisterPublisher)
+            var registrationTask = connection.ControlReceived.Take(1).ToTask();
+            connection.InitReceiving();
+            var registration = await registrationTask;
+            if (registration.Control == ControlBytes.RegisterPublisher)
             {
-                var publisherId = firstControl.Data;
+                var publisherId = registration.Data;
                 _publishers.Add(publisherId, new ServerPublisher(connection));
                 log.Info($"New Publisher registered (ID = {publisherId})");
             }
-            else if (firstControl.Control == ControlBytes.RegisterSubscriber)
+            else if (registration.Control == ControlBytes.RegisterSubscriber)
             {
                 _subscribers.Add(new ServerSubscriber(connection));
                 log.Info("New Subscriber registered");

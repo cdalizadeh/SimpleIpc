@@ -16,13 +16,9 @@ namespace PubSubIpc.Server
         public ServerPublisher(Connection connection)
         {
             _connection = connection;
-            _connection.DataReceived.Subscribe((s) => Console.WriteLine("Thing: " + s));
-            _connection.BeginSending();
-        }
-
-        public void Test()
-        {
-            log.Error("Test");
+            _connection.DataReceived.Subscribe((s) => log.Debug("ServerPublisher received: " + s));
+            log.Warn(DataReceived.GetHashCode());
+            _connection.InitSending();
         }
     }
 }

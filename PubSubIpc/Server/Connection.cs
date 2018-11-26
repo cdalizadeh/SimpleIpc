@@ -16,7 +16,7 @@ namespace PubSubIpc.Server
 
         private Socket _socket;
         private object _syncRoot = new object();
-        private Subject<string> _sendDataSubject = new Subject<string>();
+        public Subject<string> _sendDataSubject = new Subject<string>();
         private Subject<string> _dataReceivedSubject = new Subject<string>();
         private Subject<ControlCommand> _controlReceivedSubject = new Subject<ControlCommand>();
 
@@ -31,7 +31,7 @@ namespace PubSubIpc.Server
             _socket = socket;
         }
 
-        public void BeginSending()
+        public void InitSending()
         {
             log.Info("Sending enabled");
             Action<string> onNext = (message) =>
@@ -43,14 +43,14 @@ namespace PubSubIpc.Server
             _sendDataSubject.Subscribe(onNext, onError);
         }
 
-        public void BeginReceiving()
+        public void InitReceiving()
         {
+            log.Info("Receiving enabled");
             Task.Run(() => ReceiveLoop());
         }
 
         private void ReceiveLoop()
         {
-            log.Info("Receiving enabled");
             byte[] bytes;
             int bytesReceived;
 
@@ -67,7 +67,7 @@ namespace PubSubIpc.Server
                 // Check if escape byte is present.
                 if (bytes[0] == (byte)ControlBytes.Escape)
                 {
-                    log.Debug($"Received control command ({bytes[1]})");
+                    log.Debug($"Received control command ({(ControlBytes)bytes[1]})");
                     // Get control byte.
                     byte control = bytes[1];
                     // Get data.

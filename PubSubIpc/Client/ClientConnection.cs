@@ -1,3 +1,4 @@
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,8 @@ namespace PubSubIpc.Client
 {
     public abstract class ClientConnection : IDisposable
     {
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         private int _port;
         private Socket _socket;
         private object _syncRoot = new object();
@@ -26,6 +29,7 @@ namespace PubSubIpc.Client
 
         protected void EstablishConnection()
         {
+            log.Debug("Establishing a connection");
             IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
             IPAddress ipAddress = ipHostInfo.AddressList[0];
             IPEndPoint remoteEP = new IPEndPoint(ipAddress, _port);
@@ -35,24 +39,27 @@ namespace PubSubIpc.Client
             _socket.Connect(remoteEP);
         }
 
-        protected void BeginSending()
+        protected void InitSending()
         {
+            log.Debug("Sending enabled");
             Action<byte[]> onNext = (bytes) => 
             {
                 _socket.Send(bytes);
                 Task.Delay(10).Wait();
             };
-            Action<Exception> onError = (e) => Console.WriteLine("Error in Send stream");
+            Action<Exception> onError = (e) => log.Error("Error in Send stream", e);
             _sendDataSubject.Subscribe(onNext, onError);
         }
 
-        protected void BeginReceiving()
+        protected void InitReceiving()
         {
+            log.Debug("Receiving enabled");
             Task.Run(() => ReceiveLoop());
         }
 
         protected void SendControl(ControlBytes controlByte, string message = null)
         {
+            log.Debug($"Sending control (byte = {controlByte}, message = {message})");
             byte[] bytesToSend;
             if (message != null)
             {
@@ -62,10 +69,6 @@ namespace PubSubIpc.Client
             else
             {
                 bytesToSend = new byte[]{(byte)ControlBytes.Escape, (byte)controlByte};
-            }
-            foreach(var b in bytesToSend)
-            {
-                Console.WriteLine(b);
             }
             _sendDataSubject.OnNext(bytesToSend);
         }
@@ -88,6 +91,7 @@ namespace PubSubIpc.Client
 
                 string data = Encoding.ASCII.GetString(bytes, 0, bytesReceived);
                 _dataReceivedSubject.OnNext(data);
+                log.Debug("Received message: " + data);
             }
         }
 
@@ -97,7 +101,7 @@ namespace PubSubIpc.Client
             {
                 if (!_shutdown)
                 {
-                    Console.WriteLine("Connection shutdown: " + message);
+                    log.Warn("Connection shutdown: " + message);
                     _shutdown = true;
                     _socket?.Shutdown(SocketShutdown.Both);
                     _socket?.Close();

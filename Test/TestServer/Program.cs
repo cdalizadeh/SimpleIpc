@@ -12,8 +12,9 @@ namespace TestServer
         {
             log.Info("Starting test server");
             Server server = new Server();
+            server.StartListening();
             
-            Console.WriteLine("Waiting");
+            log.Info("Waiting");
             Console.ReadKey();        
         }
     }

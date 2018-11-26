@@ -24,7 +24,7 @@ namespace PubSubIpc.Client
         {
             log.Info("Connecting to server");
             EstablishConnection();
-            BeginSending();
+            InitSending();
             SendControl(ControlBytes.RegisterPublisher, _publisherId);
         }
 

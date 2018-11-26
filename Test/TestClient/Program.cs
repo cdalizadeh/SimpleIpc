@@ -1,6 +1,7 @@
-﻿using log4net;
-using System;
+﻿using CommandLine;
+using log4net;
 using PubSubIpc.Client;
+using System;
 
 namespace TestClient
 {
@@ -10,10 +11,45 @@ namespace TestClient
 
         static void Main(string[] args)
         {
-            log.Info("Starting test client");
-            Publisher publisher = new Publisher("pub21");
+            CommandLine.Parser.Default.ParseArguments<CommandLineOptions>(args)
+                .WithParsed<CommandLineOptions>(StartWithOptions);
+        }
 
-            Console.WriteLine("Waiting");
+        private static void StartWithOptions(CommandLineOptions opts)
+        {
+            if (opts.ClientType == "publisher")
+            {
+                StartPublisherClient();
+            }
+            else if (opts.ClientType == "subscriber")
+            {
+                StartSubscriberClient();
+            }
+        }
+
+        private static void StartPublisherClient()
+        {
+            log.Info("Starting test client as Publisher");
+            Publisher publisher = new Publisher("pub21");
+            publisher.Connect();
+
+            log.Info("Starting client publisher loop");
+            while (true)
+            {
+                var message = Console.ReadLine();
+                publisher.Send(message);
+            }
+        }
+
+        private static void StartSubscriberClient()
+        {
+            log.Info("Starting test client as Subscriber");
+            Subscriber subscriber = new Subscriber();
+            subscriber.Connect();
+            subscriber.Subscribe("pub21");
+            subscriber.DataReceived.Subscribe((s) => log.Debug($"Received Message: {s}"));
+            
+            log.Info("Waiting");
             Console.ReadKey();
         }
     }

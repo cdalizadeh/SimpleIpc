@@ -33,9 +33,10 @@ namespace PubSubIpc.Server
                     log.Error("Unknown control byte");
                 }
             };
+            _connection = connection;
             _connection.ControlReceived.Subscribe(onNext);
-            _connection.BeginReceiving();
-            _connection.BeginSending();
+            _connection.InitReceiving();
+            _connection.InitSending();
         }
 
         public void Subscribe(string publisherId)
@@ -43,7 +44,7 @@ namespace PubSubIpc.Server
             log.Info($"Subscribing to Publisher ({publisherId})");
             //check if publisher exists
             var publisher = Publishers[publisherId];
-            _subscriptions[publisherId] = publisher.DataReceived.Subscribe((IObserver<string>)_connection.SendData);
+            _subscriptions[publisherId] = publisher.DataReceived.Subscribe(_connection._sendDataSubject);
         }
 
         public void Unsubscribe(string publisherId)
