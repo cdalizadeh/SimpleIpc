@@ -1,4 +1,4 @@
-namespace PubSubIpc
+namespace PubSubIpc.Server
 {
     public struct ControlCommand
     {

@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using log4net;
 
-namespace PubSubIpc
+namespace PubSubIpc.Server
 {
     public class Connection : IDisposable
     {

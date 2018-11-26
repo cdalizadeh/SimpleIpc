@@ -1,8 +1,9 @@
 using System;
+using PubSubIpc.Client;
 
-namespace PubSubIpc
+namespace PubSubIpc.Server
 {
-    class LocalPublisher : IPublisher
+    public class LocalPublisher : IPublisher
     {
         public LocalPublisher()
         {

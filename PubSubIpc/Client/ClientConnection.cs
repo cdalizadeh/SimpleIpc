@@ -7,7 +7,7 @@ using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TcpClient
+namespace PubSubIpc.Client
 {
     public abstract class ClientConnection : IDisposable
     {

@@ -5,36 +5,39 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using log4net;
 
-namespace TcpClient
+namespace PubSubIpc.Client
 {
-    public class SubscriberClient : ClientConnection, ISubscriberClient
+    public class Subscriber : ClientConnection, ISubscriber
     {
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public IObservable<string> DataReceived => (IObservable<string>) _dataReceivedSubject;
 
-        public SubscriberClient(int port = 13001) : base(port)
+        public Subscriber(int port = 13001) : base(port)
         {
+            log.Info("Creating new subscriber");
         }
 
         public void Connect()
         {
-            Console.WriteLine("starting connect");
+            log.Info("Connecting to server");
             EstablishConnection();
             BeginSending();
             BeginReceiving();
             SendControl(ControlBytes.RegisterSubscriber);
-            Console.WriteLine("ending connect");
+            log.Info("Successfully connected to server");
         }
 
         public void Subscribe(string publisherId)
         {
             Console.WriteLine("Starting subscribe");
             SendControl(ControlBytes.Subscribe, publisherId);
-            Console.WriteLine("Ending subscribe");
         }
 
         public void Unsubscribe(string publisherId)
         {
+            Console.WriteLine("Starting unsubscribe");
             SendControl(ControlBytes.Unsubscribe, publisherId);
         }
     }

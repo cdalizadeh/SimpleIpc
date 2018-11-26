@@ -1,8 +1,9 @@
 using System;
+using PubSubIpc.Client;
 
-namespace PubSubIpc
+namespace PubSubIpc.Server
 {
-    class LocalSubscriber : ISubscriber
+    public class LocalSubscriber : ISubscriber
     {
         public IObservable<string> DataReceived {get;}
 

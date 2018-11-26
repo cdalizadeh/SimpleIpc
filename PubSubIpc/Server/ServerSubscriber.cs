@@ -4,19 +4,19 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using log4net;
 
-namespace PubSubIpc
+namespace PubSubIpc.Server
 {
-    class Subscriber
+    class ServerSubscriber
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private Dictionary<string, IDisposable> _subscriptions = new Dictionary<string, IDisposable>();
         private readonly Connection _connection;
 
-        public static Dictionary<string, Publisher> Publishers;
+        public static Dictionary<string, ServerPublisher> Publishers;
 
 
-        public Subscriber(Connection connection)
+        public ServerSubscriber(Connection connection)
         {
             Action<ControlCommand> onNext = (cc) =>
             {

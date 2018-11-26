@@ -1,6 +1,6 @@
 using System;
 
-namespace PubSubIpc
+namespace PubSubIpc.Server
 {
     interface IServer
     {

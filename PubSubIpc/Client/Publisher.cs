@@ -5,20 +5,24 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using log4net;
 
-namespace TcpClient
+namespace PubSubIpc.Client
 {
-    public class PublisherClient : ClientConnection, IPublisherClient
+    public class Publisher : ClientConnection, IPublisher
     {
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private string _publisherId;
 
-        public PublisherClient(string publisherId, int port = 13001) : base(port)
+        public Publisher(string publisherId, int port = 13001) : base(port)
         {
+            log.Info($"Creating new publisher (publisherId = {publisherId})");
             _publisherId = publisherId;
         }
 
         public void Connect()
         {
+            log.Info("Connecting to server");
             EstablishConnection();
             BeginSending();
             SendControl(ControlBytes.RegisterPublisher, _publisherId);
@@ -26,6 +30,7 @@ namespace TcpClient
 
         public void Send(string message)
         {
+            log.Debug($"Sending message ({message})");
             var encodedMsg = Encoding.ASCII.GetBytes(message);
             _sendDataSubject.OnNext(encodedMsg);
         }

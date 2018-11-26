@@ -8,16 +8,16 @@ using System.Reactive.Threading.Tasks;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PubSubIpc
+namespace PubSubIpc.Server
 {
-    class Server : IServer
+    public class Server : IServer
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly int _port;
-        private Dictionary<string, Publisher> _publishers = new Dictionary<string, Publisher>();
-        private List<Subscriber> _subscribers = new List<Subscriber>();
+        private Dictionary<string, ServerPublisher> _publishers = new Dictionary<string, ServerPublisher>();
+        private List<ServerSubscriber> _subscribers = new List<ServerSubscriber>();
 
-        public Server(int port)
+        public Server(int port = 13001)
         {
             log.Info("Creating new server");
             _port = port;
@@ -61,12 +61,12 @@ namespace PubSubIpc
             if (firstControl.Control == ControlBytes.RegisterPublisher)
             {
                 var publisherId = firstControl.Data;
-                _publishers.Add(publisherId, new Publisher(connection));
+                _publishers.Add(publisherId, new ServerPublisher(connection));
                 log.Info($"New Publisher registered (ID = {publisherId})");
             }
             else if (firstControl.Control == ControlBytes.RegisterSubscriber)
             {
-                _subscribers.Add(new Subscriber(connection));
+                _subscribers.Add(new ServerSubscriber(connection));
                 log.Info("New Subscriber registered");
             }
             else
