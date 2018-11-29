@@ -14,6 +14,7 @@ namespace PubSubIpc.Shared
     public abstract class Connection : IDisposable
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private const int _maxIncomingMessageLength = 1024;
         private volatile bool _disposed = false;
         private volatile bool _receiving = false;
         private volatile bool _sending = false;
@@ -67,7 +68,7 @@ namespace PubSubIpc.Shared
             {
                 while (!_disposed)
                 {
-                    bytes = new byte[1024];
+                    bytes = new byte[_maxIncomingMessageLength];
                     bytesSegment = new ArraySegment<byte>(bytes);
 
                     try
@@ -76,16 +77,26 @@ namespace PubSubIpc.Shared
                     }
                     catch(SocketException se)
                     {
-                        if (se.Message == "Operation canceled")
+                        // Handle socket error on disposal.
+                        if (_disposed) break;
+                        
+                        // Handle remote disconnection (Windows).
+                        if (se.ErrorCode == 10054)
                         {
-                            continue;
+                            log.Warn("Remote host disconnected");
+                            Dispose();
+                            break;
                         }
+
+                        // Handle other socket errors.
                         throw;
                     }
 
+                    // Handle remote disconnection (Linux).
                     if (bytesReceived == 0)
                     {
-                        log.Warn("Socket connection closed");
+                        log.Warn("Remote host disconnected");
+                        Dispose();
                         break;
                     }
 
