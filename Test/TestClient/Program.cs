@@ -37,7 +37,14 @@ namespace TestClient
             while (true)
             {
                 var message = Console.ReadLine();
-                publisher.Send(message);
+                if (message == "dispose")
+                {
+                    publisher.Dispose();
+                }
+                else
+                {
+                    publisher.Send(message);
+                }
             }
         }
 
@@ -50,7 +57,14 @@ namespace TestClient
             subscriber.DataReceived.Subscribe((s) => log.Debug($"Received Message: {s}"));
             
             log.Info("Waiting");
-            Console.ReadKey();
+            while (true)
+            {
+                var message = Console.ReadLine();
+                if (message == "dispose")
+                {
+                    subscriber.Dispose();
+                }
+            }
         }
     }
 }

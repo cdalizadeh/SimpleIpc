@@ -14,8 +14,9 @@ namespace PubSubIpc.Shared
     public abstract class Connection : IDisposable
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private volatile bool _shutdown = false;
-        private object _syncRoot = new object();
+        private volatile bool _disposed = false;
+        private volatile bool _receiving = false;
+        private volatile bool _sending = false;
 
         protected Socket _socket;
         protected Subject<byte[]> _sendDataSubject = new Subject<byte[]>();
@@ -23,66 +24,93 @@ namespace PubSubIpc.Shared
 
         public void InitSendLoop()
         {
-            log.Info("Initializing send loop");
-            Action<byte[]> onNext = (bytes) => 
+            if (!_sending)
             {
-                _socket.Send(bytes);
-                Task.Delay(10).Wait();
-            };
-            Action<Exception> onError = (e) => log.Error("Error in send loop", e);
-            Action onCompleted = () => log.Debug("Send loop completed");
-            _sendDataSubject.Subscribe(onNext, onError, onCompleted);
+                log.Info("Initializing send loop");
+                _sending = true;
+                Action<byte[]> onNext = (bytes) => 
+                {
+                    _socket.Send(bytes);
+                    Task.Delay(10).Wait();
+                };
+                Action<Exception> onError = (e) => log.Error("Error in send loop", e);
+                Action onCompleted = () => log.Debug("Send loop completed");
+                _sendDataSubject.Subscribe(onNext, onError, onCompleted);
+            }
+            else
+            {
+                log.Warn($"{nameof(InitSendLoop)} called more than once");
+            }
         }
 
         public void InitReceiveLoop()
         {
-            log.Info("Initializing receive loop");
-            new Thread(ReceiveLoop);
+            if (!_receiving)
+            {
+                log.Info("Initializing receive loop");
+                _receiving = true;
+                Task.Run(() => ReceiveLoopAsync());
+            }
+            else
+            {
+                log.Warn($"{nameof(InitReceiveLoop)} called more than once");
+            }
         }
 
-        private async void ReceiveLoop()
+        private async Task ReceiveLoopAsync()
         {
             byte[] bytes;
             ArraySegment<byte> bytesSegment;
             int bytesReceived;
 
-            while (!_shutdown)
+            try
             {
-                bytes = new byte[1024];
-                bytesSegment = new ArraySegment<byte>(bytes);
-
-                bytesReceived = await _socket.ReceiveAsync(bytesSegment, SocketFlags.None);
-                if (bytesReceived == 0)
+                while (!_disposed)
                 {
-                    log.Warn("Socket connection closed");
-                    break;
+                    bytes = new byte[1024];
+                    bytesSegment = new ArraySegment<byte>(bytes);
+
+                    try
+                    {
+                        bytesReceived = await _socket.ReceiveAsync(bytesSegment, SocketFlags.None);
+                    }
+                    catch(SocketException se)
+                    {
+                        if (se.Message == "Operation canceled")
+                        {
+                            continue;
+                        }
+                        throw;
+                    }
+
+                    if (bytesReceived == 0)
+                    {
+                        log.Warn("Socket connection closed");
+                        break;
+                    }
+
+                    log.Debug($"Received message ({bytesReceived} bytes)");
+                    _dataReceivedSubject.OnNext(bytesSegment.ToArray());
                 }
-                
-                _dataReceivedSubject.OnNext(bytesSegment.ToArray());
-                log.Debug("Received message");
             }
-        }
-
-        private void TerminateConnection(string message)
-        {
-            lock (_syncRoot)
+            catch (Exception e)
             {
-                if (!_shutdown)
-                {
-                    _shutdown = true;
-                    log.Warn($"Connection shutdown ({message})");
-                    _socket?.Shutdown(SocketShutdown.Both);
-                    _socket?.Close();
-                    _dataReceivedSubject?.OnCompleted();
-                    _dataReceivedSubject?.Dispose();
-                    _sendDataSubject?.OnCompleted();
-                    _sendDataSubject?.Dispose();
-                }
+                log.Error("Error in receive loop", e);
             }
         }
 
         public void Dispose(){
-            TerminateConnection("call to Dispose() received");
+            if (!_disposed)
+            {
+                log.Info("Disposing connection");
+                _disposed = true;
+                _socket?.Shutdown(SocketShutdown.Both);
+                _socket?.Close();
+                _dataReceivedSubject.OnCompleted();
+                _dataReceivedSubject.Dispose();
+                _sendDataSubject.OnCompleted();
+                _sendDataSubject.Dispose();
+            }
         }
     }
 }

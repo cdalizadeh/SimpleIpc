@@ -39,7 +39,6 @@ namespace PubSubIpc.Server
             _connection = connection;
             _connection.ControlReceived.Subscribe(onNext);
             _connection.InitSendLoop();
-            _connection.InitReceiveLoop();
         }
 
         public void Subscribe(string publisherId)
