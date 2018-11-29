@@ -17,7 +17,7 @@ namespace PubSubIpc.Server
         {
             _connection = connection;
             _connection.DataReceived.Subscribe((s) => log.Debug("ServerPublisher received: " + s));
-            _connection.InitSendLoop();
+            _connection.InitSend();
         }
     }
 }

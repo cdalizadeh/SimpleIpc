@@ -26,8 +26,8 @@ namespace PubSubIpc.Client
         {
             log.Info("Connecting to server");
             ConnectToServer();
-            InitSendLoop();
-            InitReceiveLoop();
+            InitSend();
+            InitReceive();
             SendControl(ControlBytes.RegisterSubscriber);
             log.Info("Successfully connected to server");
         }

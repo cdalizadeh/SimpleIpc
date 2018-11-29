@@ -26,7 +26,7 @@ namespace PubSubIpc.Client
             log.Info("Connecting to server");
             ConnectToServer();
             log.Info("Registering as publisher");
-            InitSendLoop();
+            InitSend();
             SendControl(ControlBytes.RegisterPublisher, _publisherId);
             log.Info("Successfully connected and registered");
         }

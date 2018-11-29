@@ -67,7 +67,7 @@ namespace PubSubIpc.Server
             log.Debug("Handling new connection");
             var connection = new ServerConnection(socket);
             var registrationTask = connection.ControlReceived.Take(1).ToTask();
-            connection.InitReceiveLoop();
+            connection.InitReceive();
             var registration = await registrationTask;
             if (registration.Control == ControlBytes.RegisterPublisher)
             {
