@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using log4net;
+using PubSubIpc.Shared;
 
 namespace PubSubIpc.Client
 {
@@ -23,9 +24,11 @@ namespace PubSubIpc.Client
         public void Connect()
         {
             log.Info("Connecting to server");
-            EstablishConnection();
-            InitSending();
+            ConnectToServer();
+            log.Info("Registering as publisher");
+            InitSendLoop();
             SendControl(ControlBytes.RegisterPublisher, _publisherId);
+            log.Info("Successfully connected and registered");
         }
 
         public void Send(string message)

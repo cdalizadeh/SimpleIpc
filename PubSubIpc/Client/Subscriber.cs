@@ -3,16 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using log4net;
+using PubSubIpc.Shared;
 
 namespace PubSubIpc.Client
 {
     public class Subscriber : ClientConnection, ISubscriber
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        public IObservable<string> DataReceived => (IObservable<string>) _dataReceivedSubject;
+        public IObservable<string> DataReceived => _dataReceivedSubject
+            .Select(bytes => Encoding.ASCII.GetString(bytes, 0, bytes.Length));
 
         public Subscriber(int port = 13001) : base(port)
         {
@@ -22,22 +25,22 @@ namespace PubSubIpc.Client
         public void Connect()
         {
             log.Info("Connecting to server");
-            EstablishConnection();
-            InitSending();
-            InitReceiving();
+            ConnectToServer();
+            InitSendLoop();
+            InitReceiveLoop();
             SendControl(ControlBytes.RegisterSubscriber);
             log.Info("Successfully connected to server");
         }
 
         public void Subscribe(string publisherId)
         {
-            Console.WriteLine("Starting subscribe");
+            log.Info($"Subscribing to ({publisherId})");
             SendControl(ControlBytes.Subscribe, publisherId);
         }
 
         public void Unsubscribe(string publisherId)
         {
-            Console.WriteLine("Starting unsubscribe");
+            log.Info($"Unsubscribing from ({publisherId})");
             SendControl(ControlBytes.Unsubscribe, publisherId);
         }
     }

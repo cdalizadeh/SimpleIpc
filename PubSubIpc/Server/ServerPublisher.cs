@@ -9,16 +9,15 @@ namespace PubSubIpc.Server
     class ServerPublisher
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private readonly Connection _connection;
+        private readonly ServerConnection _connection;
 
         public IObservable<string> DataReceived => _connection.DataReceived;
 
-        public ServerPublisher(Connection connection)
+        public ServerPublisher(ServerConnection connection)
         {
             _connection = connection;
             _connection.DataReceived.Subscribe((s) => log.Debug("ServerPublisher received: " + s));
-            log.Warn(DataReceived.GetHashCode());
-            _connection.InitSending();
+            _connection.InitSendLoop();
         }
     }
 }

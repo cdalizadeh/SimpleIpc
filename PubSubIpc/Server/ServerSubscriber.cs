@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Reactive.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using log4net;
+using PubSubIpc.Shared;
 
 namespace PubSubIpc.Server
 {
@@ -11,12 +14,12 @@ namespace PubSubIpc.Server
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private Dictionary<string, IDisposable> _subscriptions = new Dictionary<string, IDisposable>();
-        private readonly Connection _connection;
+        private readonly ServerConnection _connection;
 
         public static Dictionary<string, ServerPublisher> Publishers;
 
 
-        public ServerSubscriber(Connection connection)
+        public ServerSubscriber(ServerConnection connection)
         {
             Action<ControlCommand> onNext = (cc) =>
             {
@@ -35,8 +38,8 @@ namespace PubSubIpc.Server
             };
             _connection = connection;
             _connection.ControlReceived.Subscribe(onNext);
-            _connection.InitReceiving();
-            _connection.InitSending();
+            _connection.InitSendLoop();
+            _connection.InitReceiveLoop();
         }
 
         public void Subscribe(string publisherId)
@@ -44,7 +47,8 @@ namespace PubSubIpc.Server
             log.Info($"Subscribing to Publisher ({publisherId})");
             //check if publisher exists
             var publisher = Publishers[publisherId];
-            _subscriptions[publisherId] = publisher.DataReceived.Subscribe(_connection._sendDataSubject);
+            _subscriptions[publisherId] = publisher.DataReceived
+                .Select(message => Encoding.ASCII.GetBytes(message)).Subscribe(_connection.SendData);
         }
 
         public void Unsubscribe(string publisherId)

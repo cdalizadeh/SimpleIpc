@@ -1,4 +1,5 @@
 using log4net;
+using PubSubIpc.Shared;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -28,7 +29,7 @@ namespace PubSubIpc.Server
 
         public void StartListening()
         {
-            log.Info("Starting Server");
+            log.Info("Listening for connections");
 
             IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
             IPAddress ipAddress = ipHostInfo.AddressList[0];
@@ -43,29 +44,30 @@ namespace PubSubIpc.Server
             Task.Run(()=>StartReceiveLoop());
         }
 
-        private void StartReceiveLoop()
+        private async void StartReceiveLoop()
         {
-            try
+            log.Info("Waiting for a connection");
+            while (true)
             {
-                log.Info("Waiting for a connection");
-                while (true)
-                {
-                    Socket socket = _listener.Accept();
-                    HandleNewConnection(socket);
-                }
-            }
-            catch (Exception e)
-            {
-                log.Error("Failure in Server", e);
+                Socket socket = await _listener.AcceptAsync();
+
+                #pragma warning disable 4014
+                Task.Run(()=>HandleNewConnection(socket).ContinueWith((t)=>{
+                    if (t.IsFaulted)
+                    {
+                        log.Error("Error handling connection");
+                    }
+                }));
+                #pragma warning restore 4014
             }
         }
 
-        private async void HandleNewConnection(Socket socket)
+        private async Task HandleNewConnection(Socket socket)
         {
             log.Debug("Handling new connection");
-            var connection = new Connection(socket);
+            var connection = new ServerConnection(socket);
             var registrationTask = connection.ControlReceived.Take(1).ToTask();
-            connection.InitReceiving();
+            connection.InitReceiveLoop();
             var registration = await registrationTask;
             if (registration.Control == ControlBytes.RegisterPublisher)
             {
