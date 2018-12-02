@@ -12,7 +12,7 @@ using PubSubIpc.Shared;
 
 namespace PubSubIpc.Server
 {
-    public class ServerConnection : Connection
+    internal class ServerConnection : Connection
     {
         private static readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

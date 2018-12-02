@@ -53,6 +53,22 @@ namespace PubSubIpc.Server
             }
         }
 
+        public ISubscriberClient CreateLocalSubscriber()
+        {
+            var subscriber = new LocalSubscriberClient();
+            _subscribers.Add(subscriber);
+
+            return subscriber;
+        }
+
+        public IPublisherClient CreateLocalPublisher(string publisherId)
+        {
+            var publisher = new LocalPublisherClient();
+            _publishers.Add(publisherId, publisher);
+
+            return publisher;
+        }
+
         private async void StartReceiveLoop()
         {
             _log.Info("Waiting for a connection");
@@ -71,19 +87,18 @@ namespace PubSubIpc.Server
             try
             {
                 _log.Debug("Handling new connection");
-                var connection = new ServerConnection(socket);
-                var registrationTask = connection.ControlReceived.Take(1).ToTask();
-                connection.InitReceive();
+                var serverConnection = new ServerConnection(socket);
+                var registrationTask = serverConnection.ControlReceived.Take(1).ToTask();
+                serverConnection.InitReceive();
                 var registration = await registrationTask;
                 if (registration.Control == ControlBytes.RegisterPublisher)
                 {
                     var publisherId = registration.Data;
-                    _publishers.Add(publisherId, new RemotePublisher(connection));
-                    _log.Info($"New Publisher registered (ID = {publisherId})");
+                    CreateRemotePublisher(publisherId, serverConnection);
                 }
                 else if (registration.Control == ControlBytes.RegisterSubscriber)
                 {
-                    _subscribers.Add(new RemoteSubscriber(connection));
+                    _subscribers.Add(new RemoteSubscriber(serverConnection));
                     _log.Info("New Subscriber registered");
                 }
                 else
@@ -97,20 +112,23 @@ namespace PubSubIpc.Server
             }
         }
 
-        public ISubscriberClient CreateLocalSubscriber()
+        private void CreateRemotePublisher(string publisherId, ServerConnection serverConnection)
         {
-            var subscriber = new LocalSubscriberClient();
-            _subscribers.Add(subscriber);
-
-            return subscriber;
-        }
-
-        public IPublisherClient CreateLocalPublisher(string publisherId)
-        {
-            var publisher = new LocalPublisherClient();
+            var publisher = new RemotePublisher(serverConnection);
             _publishers.Add(publisherId, publisher);
 
-            return publisher;
+            Action onCompleted = () =>
+            {
+                _publishers.Remove(publisherId);
+            };
+            publisher.DataReceived.Subscribe((s)=>{}, onCompleted);
+            
+            _log.Info($"New Publisher registered (ID = {publisherId})");
+        }
+
+        private void CreateRemoteSubscriber(string subscriberId)
+        {
+
         }
     }
 }
