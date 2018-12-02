@@ -30,7 +30,7 @@ namespace TestClient
         private static void StartPublisherClient()
         {
             log.Info("Starting test client as Publisher");
-            Publisher publisher = new Publisher("pub21");
+            PublisherClient publisher = new PublisherClient("pub21");
             publisher.Connect();
 
             log.Info("Starting client publisher loop");
@@ -51,7 +51,7 @@ namespace TestClient
         private static void StartSubscriberClient()
         {
             log.Info("Starting test client as Subscriber");
-            Subscriber subscriber = new Subscriber();
+            SubscriberClient subscriber = new SubscriberClient();
             subscriber.Connect();
             subscriber.Subscribe("pub21");
             subscriber.DataReceived.Subscribe((s) => log.Debug($"Received Message: {s}"));

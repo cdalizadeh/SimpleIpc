@@ -11,37 +11,46 @@ using System.Threading.Tasks;
 
 namespace PubSubIpc.Server
 {
-    public class Server : IServer
+    public class Server
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly int _port;
         private Socket _listener;
-        private Dictionary<string, ServerPublisher> _publishers = new Dictionary<string, ServerPublisher>();
-        private List<ServerSubscriber> _subscribers = new List<ServerSubscriber>();
+        private bool _listening = false;
+        private Dictionary<string, IPublisher> _publishers = new Dictionary<string, IPublisher>();
+        private List<ISubscriber> _subscribers = new List<ISubscriber>();
 
         public Server(int port = 13001)
         {
             log.Info("Creating new server");
             _port = port;
 
-            ServerSubscriber.Publishers = _publishers;
+            Subscriber.Publishers = _publishers;
         }
 
         public void StartListening()
         {
-            log.Info("Listening for connections");
+            if (!_listening)
+            {
+                log.Info("Listening for connections");
+                _listening = true;
 
-            IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress ipAddress = ipHostInfo.AddressList[0];
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, _port);
+                IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
+                IPAddress ipAddress = ipHostInfo.AddressList[0];
+                IPEndPoint localEndPoint = new IPEndPoint(ipAddress, _port);
 
-            _listener = new Socket(ipAddress.AddressFamily,
-                SocketType.Stream, ProtocolType.Tcp);
-            
-            _listener.Bind(localEndPoint);
-            _listener.Listen(10);
+                _listener = new Socket(ipAddress.AddressFamily,
+                    SocketType.Stream, ProtocolType.Tcp);
 
-            Task.Run(()=>StartReceiveLoop());
+                _listener.Bind(localEndPoint);
+                _listener.Listen(10);
+
+                Task.Run(() => StartReceiveLoop());
+            }
+            else
+            {
+                log.Warn($"{nameof(StartListening)} called more than once");
+            }
         }
 
         private async void StartReceiveLoop()
@@ -72,12 +81,12 @@ namespace PubSubIpc.Server
             if (registration.Control == ControlBytes.RegisterPublisher)
             {
                 var publisherId = registration.Data;
-                _publishers.Add(publisherId, new ServerPublisher(connection));
+                _publishers.Add(publisherId, new RemotePublisher(connection));
                 log.Info($"New Publisher registered (ID = {publisherId})");
             }
             else if (registration.Control == ControlBytes.RegisterSubscriber)
             {
-                _subscribers.Add(new ServerSubscriber(connection));
+                _subscribers.Add(new RemoteSubscriber(connection));
                 log.Info("New Subscriber registered");
             }
             else
@@ -86,14 +95,20 @@ namespace PubSubIpc.Server
             }
         }
 
-        public LocalSubscriber CreateLocalSubscriber()
+        public ISubscriberClient CreateLocalSubscriber()
         {
-            return new LocalSubscriber();
+            var subscriber = new LocalSubscriberClient();
+            _subscribers.Add(subscriber);
+
+            return subscriber;
         }
 
-        public LocalPublisher CreateLocalPublisher()
+        public IPublisherClient CreateLocalPublisher(string publisherId)
         {
-            return new LocalPublisher();
+            var publisher = new LocalPublisherClient();
+            _publishers.Add(publisherId, publisher);
+
+            return publisher;
         }
     }
 }

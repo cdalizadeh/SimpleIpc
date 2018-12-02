@@ -1,12 +1,11 @@
 using System;
 
-namespace PubSubIpc.Client
+namespace PubSubIpc.Shared
 {
-    interface ISubscriber
+    public interface ISubscriberClient
     {
         IObservable<string> DataReceived {get;}
 
-        void Connect();
         void Subscribe(string publisherId);
         void Unsubscribe(string publisherId);
     }

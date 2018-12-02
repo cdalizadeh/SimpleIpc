@@ -37,7 +37,7 @@ namespace PubSubIpc.Shared
                     var delimitedBytes = new byte[bytes.Length + 1];
                     Array.Copy(bytes, delimitedBytes, bytes.Length);
                     delimitedBytes[bytes.Length] = (byte)ControlBytes.Delimiter;
-                    _socket.Send(bytes);
+                    _socket.Send(delimitedBytes);
                 };
                 Action<Exception> onError = (e) => log.Error("Error in send subscription", e);
                 Action onCompleted = () => log.Debug("Send subscription completed");

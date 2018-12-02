@@ -6,18 +6,17 @@ using log4net;
 
 namespace PubSubIpc.Server
 {
-    class ServerPublisher
+    class RemotePublisher : IPublisher
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly ServerConnection _connection;
 
         public IObservable<string> DataReceived => _connection.DataReceived;
 
-        public ServerPublisher(ServerConnection connection)
+        public RemotePublisher(ServerConnection connection)
         {
             _connection = connection;
-            _connection.DataReceived.Subscribe((s) => log.Debug("ServerPublisher received: " + s));
-            _connection.InitSend();
+            _connection.DataReceived.Subscribe((s) => log.Debug("Received: " + s));
         }
     }
 }
