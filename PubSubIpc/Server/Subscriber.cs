@@ -9,7 +9,7 @@ namespace PubSubIpc.Server
 {
     public abstract class Subscriber
     {
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly Dictionary<string, IDisposable> _subscriptions = new Dictionary<string, IDisposable>();
 
         private Subject<string> _dataReceivedSubject = new Subject<string>();
@@ -20,7 +20,7 @@ namespace PubSubIpc.Server
 
         public void Subscribe(string publisherId)
         {
-            log.Info($"Subscribing to Publisher ({publisherId})");
+            _log.Info($"Subscribing to Publisher ({publisherId})");
             //check if publisher exists
             var publisher = Publishers[publisherId];
             _subscriptions[publisherId] = publisher.DataReceived.Subscribe(_dataReceivedSubject);
@@ -28,7 +28,7 @@ namespace PubSubIpc.Server
 
         public void Unsubscribe(string publisherId)
         {
-            log.Info($"Unsubscribing from Publisher ({publisherId})");
+            _log.Info($"Unsubscribing from Publisher ({publisherId})");
             _subscriptions[publisherId].Dispose();
             _subscriptions.Remove(publisherId);
         }

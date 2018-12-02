@@ -7,7 +7,7 @@ namespace TestClient
 {
     class Program
     {
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         static void Main(string[] args)
         {
@@ -29,11 +29,11 @@ namespace TestClient
 
         private static void StartPublisherClient()
         {
-            log.Info("Starting test client as Publisher");
+            _log.Info("Starting test client as Publisher");
             PublisherClient publisher = new PublisherClient("pub21");
             publisher.Connect();
 
-            log.Info("Starting client publisher loop");
+            _log.Info("Starting client publisher loop");
             while (true)
             {
                 var message = Console.ReadLine();
@@ -50,13 +50,13 @@ namespace TestClient
 
         private static void StartSubscriberClient()
         {
-            log.Info("Starting test client as Subscriber");
+            _log.Info("Starting test client as Subscriber");
             SubscriberClient subscriber = new SubscriberClient();
             subscriber.Connect();
             subscriber.Subscribe("pub21");
-            subscriber.DataReceived.Subscribe((s) => log.Debug($"Received Message: {s}"));
+            subscriber.DataReceived.Subscribe((s) => _log.Debug($"Received Message: {s}"));
             
-            log.Info("Waiting");
+            _log.Info("Waiting");
             while (true)
             {
                 var message = Console.ReadLine();

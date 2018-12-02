@@ -12,7 +12,7 @@ namespace PubSubIpc.Shared
     /// </summary>
     public abstract class Connection : IDisposable
     {
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private const int _maxIncomingMessageLength = 1024;
         private volatile bool _disposed = false;
         private volatile bool _receiving = false;
@@ -29,7 +29,7 @@ namespace PubSubIpc.Shared
         {
             if (!_sending)
             {
-                log.Info("Initializing send loop");
+                _log.Info("Initializing send loop");
                 _sending = true;
                 Action<byte[]> onNext = (bytes) => 
                 {
@@ -39,13 +39,13 @@ namespace PubSubIpc.Shared
                     delimitedBytes[bytes.Length] = (byte)ControlBytes.Delimiter;
                     _socket.Send(delimitedBytes);
                 };
-                Action<Exception> onError = (e) => log.Error("Error in send subscription", e);
-                Action onCompleted = () => log.Debug("Send subscription completed");
+                Action<Exception> onError = (e) => _log.Error("Error in send subscription", e);
+                Action onCompleted = () => _log.Debug("Send subscription completed");
                 _sendDataSubject.Subscribe(onNext, onError, onCompleted);
             }
             else
             {
-                log.Warn($"{nameof(InitSend)} called more than once");
+                _log.Warn($"{nameof(InitSend)} called more than once");
             }
         }
 
@@ -56,13 +56,13 @@ namespace PubSubIpc.Shared
         {
             if (!_receiving)
             {
-                log.Info("Initializing receive loop");
+                _log.Info("Initializing receive loop");
                 _receiving = true;
                 Task.Run(() => ReceiveLoopAsync());
             }
             else
             {
-                log.Warn($"{nameof(InitReceive)} called more than once");
+                _log.Warn($"{nameof(InitReceive)} called more than once");
             }
         }
 
@@ -96,7 +96,7 @@ namespace PubSubIpc.Shared
                         // Handle remote disconnection (Windows).
                         if (se.ErrorCode == 10054)
                         {
-                            log.Warn("Remote host disconnected");
+                            _log.Warn("Remote host disconnected");
                             Dispose();
                             break;
                         }
@@ -108,12 +108,12 @@ namespace PubSubIpc.Shared
                     // Handle remote disconnection (Linux).
                     if (numBytesReceived == 0)
                     {
-                        log.Warn("Remote host disconnected");
+                        _log.Warn("Remote host disconnected");
                         Dispose();
                         break;
                     }
 
-                    log.Debug($"Received message ({numBytesReceived} bytes)");
+                    _log.Debug($"Received message ({numBytesReceived} bytes)");
 
                     receivedMessage = bytesSegment.ToArray();
 
@@ -126,7 +126,7 @@ namespace PubSubIpc.Shared
             }
             catch (Exception e)
             {
-                log.Error("Error in receive loop", e);
+                _log.Error("Error in receive loop", e);
             }
         }
 
@@ -160,7 +160,7 @@ namespace PubSubIpc.Shared
         public void Dispose(){
             if (!_disposed)
             {
-                log.Info("Disposing connection");
+                _log.Info("Disposing connection");
                 _disposed = true;
                 _socket?.Shutdown(SocketShutdown.Both);
                 _socket?.Close();

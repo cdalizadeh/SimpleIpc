@@ -11,7 +11,7 @@ namespace PubSubIpc.Server
 {
     class RemoteSubscriber : Subscriber, ISubscriber
     {
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private IDisposable _subscription;
         private readonly ServerConnection _connection;
@@ -32,7 +32,7 @@ namespace PubSubIpc.Server
                 }
                 else
                 {
-                    log.Error("Unknown control byte");
+                    _log.Error("Unknown control byte");
                 }
             };
             Action onCompletedControlCommand = () =>

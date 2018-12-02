@@ -8,7 +8,7 @@ namespace PubSubIpc.Server
 {
     class RemotePublisher : IPublisher
     {
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly ServerConnection _connection;
 
         public IObservable<string> DataReceived => _connection.DataReceived;
@@ -16,7 +16,7 @@ namespace PubSubIpc.Server
         public RemotePublisher(ServerConnection connection)
         {
             _connection = connection;
-            _connection.DataReceived.Subscribe((s) => log.Debug("Received: " + s));
+            _connection.DataReceived.Subscribe((s) => _log.Debug("Received: " + s));
         }
     }
 }

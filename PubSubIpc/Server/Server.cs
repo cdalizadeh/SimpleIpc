@@ -13,7 +13,7 @@ namespace PubSubIpc.Server
 {
     public class Server
     {
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly int _port;
         private Socket _listener;
         private bool _listening = false;
@@ -22,7 +22,7 @@ namespace PubSubIpc.Server
 
         public Server(int port = 13001)
         {
-            log.Info("Creating new server");
+            _log.Info("Creating new server");
             _port = port;
 
             Subscriber.Publishers = _publishers;
@@ -32,7 +32,7 @@ namespace PubSubIpc.Server
         {
             if (!_listening)
             {
-                log.Info("Listening for connections");
+                _log.Info("Listening for connections");
                 _listening = true;
 
                 IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
@@ -49,13 +49,13 @@ namespace PubSubIpc.Server
             }
             else
             {
-                log.Warn($"{nameof(StartListening)} called more than once");
+                _log.Warn($"{nameof(StartListening)} called more than once");
             }
         }
 
         private async void StartReceiveLoop()
         {
-            log.Info("Waiting for a connection");
+            _log.Info("Waiting for a connection");
             while (true)
             {
                 Socket socket = await _listener.AcceptAsync();
@@ -70,7 +70,7 @@ namespace PubSubIpc.Server
         {
             try
             {
-                log.Debug("Handling new connection");
+                _log.Debug("Handling new connection");
                 var connection = new ServerConnection(socket);
                 var registrationTask = connection.ControlReceived.Take(1).ToTask();
                 connection.InitReceive();
@@ -79,21 +79,21 @@ namespace PubSubIpc.Server
                 {
                     var publisherId = registration.Data;
                     _publishers.Add(publisherId, new RemotePublisher(connection));
-                    log.Info($"New Publisher registered (ID = {publisherId})");
+                    _log.Info($"New Publisher registered (ID = {publisherId})");
                 }
                 else if (registration.Control == ControlBytes.RegisterSubscriber)
                 {
                     _subscribers.Add(new RemoteSubscriber(connection));
-                    log.Info("New Subscriber registered");
+                    _log.Info("New Subscriber registered");
                 }
                 else
                 {
-                    log.Error("Non-registration control byte sent in first message");
+                    _log.Error("Non-registration control byte sent in first message");
                 }
             }
             catch(Exception e)
             {
-                log.Error("Failed to handle new connection", e);
+                _log.Error("Failed to handle new connection", e);
             }
         }
 
