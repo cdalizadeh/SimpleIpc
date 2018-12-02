@@ -35,16 +35,20 @@ namespace PubSubIpc.Server
                     log.Error("Unknown control byte");
                 }
             };
+            Action onCompletedControlCommand = () =>
+            {
+                Dispose();
+            };
+            _subscription = _connection.ControlReceived.Subscribe(onNextControlCommand, onCompletedControlCommand);
 
-            _subscription = _connection.ControlReceived.Subscribe(onNextControlCommand);
             _connection.InitSend();
-
             _dataReceived.Select(message => Encoding.ASCII.GetBytes(message)).Subscribe(_connection.SendData);
         }
 
         public void Dispose()
         {
             _subscription.Dispose();
+            UnsubscribeAll();
         }
     }
 }

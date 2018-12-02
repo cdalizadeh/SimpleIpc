@@ -61,37 +61,39 @@ namespace PubSubIpc.Server
                 Socket socket = await _listener.AcceptAsync();
 
                 #pragma warning disable 4014
-                Task.Run(()=>HandleNewConnection(socket).ContinueWith((t)=>{
-                    if (t.IsFaulted)
-                    {
-                        log.Error("Error handling connection");
-                    }
-                }));
+                Task.Run(() => HandleNewConnection(socket));
                 #pragma warning restore 4014
             }
         }
 
         private async Task HandleNewConnection(Socket socket)
         {
-            log.Debug("Handling new connection");
-            var connection = new ServerConnection(socket);
-            var registrationTask = connection.ControlReceived.Take(1).ToTask();
-            connection.InitReceive();
-            var registration = await registrationTask;
-            if (registration.Control == ControlBytes.RegisterPublisher)
+            try
             {
-                var publisherId = registration.Data;
-                _publishers.Add(publisherId, new RemotePublisher(connection));
-                log.Info($"New Publisher registered (ID = {publisherId})");
+                log.Debug("Handling new connection");
+                var connection = new ServerConnection(socket);
+                var registrationTask = connection.ControlReceived.Take(1).ToTask();
+                connection.InitReceive();
+                var registration = await registrationTask;
+                if (registration.Control == ControlBytes.RegisterPublisher)
+                {
+                    var publisherId = registration.Data;
+                    _publishers.Add(publisherId, new RemotePublisher(connection));
+                    log.Info($"New Publisher registered (ID = {publisherId})");
+                }
+                else if (registration.Control == ControlBytes.RegisterSubscriber)
+                {
+                    _subscribers.Add(new RemoteSubscriber(connection));
+                    log.Info("New Subscriber registered");
+                }
+                else
+                {
+                    log.Error("Non-registration control byte sent in first message");
+                }
             }
-            else if (registration.Control == ControlBytes.RegisterSubscriber)
+            catch(Exception e)
             {
-                _subscribers.Add(new RemoteSubscriber(connection));
-                log.Info("New Subscriber registered");
-            }
-            else
-            {
-                log.Error("Non-registration control byte sent in first message");
+                log.Error("Failed to handle new connection", e);
             }
         }
 

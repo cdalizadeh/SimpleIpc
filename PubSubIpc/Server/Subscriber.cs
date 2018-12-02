@@ -32,5 +32,14 @@ namespace PubSubIpc.Server
             _subscriptions[publisherId].Dispose();
             _subscriptions.Remove(publisherId);
         }
+
+        protected void UnsubscribeAll()
+        {
+            foreach(var subscription in _subscriptions)
+            {
+                subscription.Value.Dispose();
+            }
+            _subscriptions.Clear();
+        }
     }
 }
