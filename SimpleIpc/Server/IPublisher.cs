@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PubSubIpc.Server
+namespace SimpleIpc.Server
 {
     public interface IPublisher
     {

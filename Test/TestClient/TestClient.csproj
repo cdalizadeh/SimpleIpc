@@ -10,7 +10,7 @@
   </PropertyGroup> 
 
   <ItemGroup>
-    <ProjectReference Include="..\..\PubSubIpc\PubSubIpc.csproj">
+    <ProjectReference Include="..\..\SimpleIpc\SimpleIpc.csproj">
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>

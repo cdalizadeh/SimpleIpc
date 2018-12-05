@@ -5,7 +5,7 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using log4net;
 
-namespace PubSubIpc.Shared
+namespace SimpleIpc.Shared
 {
     /// <summary>
     /// Abstract wrapper class around a Socket. Exposes IO as Rx Subjects. Delimits messages.

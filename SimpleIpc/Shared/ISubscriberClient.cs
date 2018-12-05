@@ -1,6 +1,6 @@
 using System;
 
-namespace PubSubIpc.Shared
+namespace SimpleIpc.Shared
 {
     public interface ISubscriberClient
     {

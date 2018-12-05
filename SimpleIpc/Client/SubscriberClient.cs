@@ -3,9 +3,9 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using log4net;
-using PubSubIpc.Shared;
+using SimpleIpc.Shared;
 
-namespace PubSubIpc.Client
+namespace SimpleIpc.Client
 {
     public class SubscriberClient : ClientConnection, ISubscriberClient
     {

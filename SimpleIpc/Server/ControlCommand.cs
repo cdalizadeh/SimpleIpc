@@ -1,8 +1,8 @@
 using System;
 using System.Text;
-using PubSubIpc.Shared;
+using SimpleIpc.Shared;
 
-namespace PubSubIpc.Server
+namespace SimpleIpc.Server
 {
     public struct ControlCommand
     {

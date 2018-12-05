@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using log4net;
-using PubSubIpc.Shared;
+using SimpleIpc.Shared;
 
-namespace PubSubIpc.Server
+namespace SimpleIpc.Server
 {
     internal class ServerConnection : Connection
     {

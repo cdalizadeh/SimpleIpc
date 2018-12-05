@@ -5,7 +5,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
 
-namespace PubSubIpc.Server
+namespace SimpleIpc.Server
 {
     public abstract class Subscriber
     {

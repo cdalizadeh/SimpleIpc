@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 using log4net;
-using PubSubIpc.Client;
+using SimpleIpc.Client;
 using System;
 
 namespace TestClient

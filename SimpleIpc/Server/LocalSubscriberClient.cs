@@ -1,7 +1,7 @@
 using System;
-using PubSubIpc.Shared;
+using SimpleIpc.Shared;
 
-namespace PubSubIpc.Server
+namespace SimpleIpc.Server
 {
     public class LocalSubscriberClient : Subscriber, ISubscriberClient, ISubscriber
     {

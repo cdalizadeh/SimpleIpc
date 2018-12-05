@@ -1,6 +1,6 @@
 ﻿using log4net;
 using System;
-using PubSubIpc.Server;
+using SimpleIpc.Server;
 
 namespace TestServer
 {

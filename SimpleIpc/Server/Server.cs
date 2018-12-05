@@ -1,5 +1,5 @@
 using log4net;
-using PubSubIpc.Shared;
+using SimpleIpc.Shared;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -9,7 +9,7 @@ using System.Reactive.Threading.Tasks;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PubSubIpc.Server
+namespace SimpleIpc.Server
 {
     public class Server
     {

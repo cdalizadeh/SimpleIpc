@@ -1,5 +1,5 @@
 using log4net;
-using PubSubIpc.Shared;
+using SimpleIpc.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace PubSubIpc.Client
+namespace SimpleIpc.Client
 {
     public abstract class ClientConnection : Connection
     {

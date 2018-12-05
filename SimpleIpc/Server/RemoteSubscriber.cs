@@ -5,9 +5,9 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using log4net;
-using PubSubIpc.Shared;
+using SimpleIpc.Shared;
 
-namespace PubSubIpc.Server
+namespace SimpleIpc.Server
 {
     class RemoteSubscriber : Subscriber, ISubscriber
     {

@@ -1,8 +1,8 @@
 using System;
 using System.Reactive.Subjects;
-using PubSubIpc.Shared;
+using SimpleIpc.Shared;
 
-namespace PubSubIpc.Server
+namespace SimpleIpc.Server
 {
     public class LocalPublisherClient : IPublisherClient, IPublisher
     {

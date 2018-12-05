@@ -3,8 +3,8 @@ using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using PubSubIpc.Client;
-using PubSubIpc.Server;
+using SimpleIpc.Client;
+using SimpleIpc.Server;
 
 namespace Tests
 {

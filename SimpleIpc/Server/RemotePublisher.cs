@@ -4,7 +4,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using log4net;
 
-namespace PubSubIpc.Server
+namespace SimpleIpc.Server
 {
     class RemotePublisher : IPublisher
     {

@@ -1,4 +1,4 @@
-﻿namespace PubSubIpc.Server
+﻿namespace SimpleIpc.Server
 {
     public interface ISubscriber
     {

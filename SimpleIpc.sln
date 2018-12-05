@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PubSubIpc", "PubSubIpc\PubSubIpc.csproj", "{B2C30BAD-6FFA-4B99-82E8-6114E042A727}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleIpc", "SimpleIpc\SimpleIpc.csproj", "{B2C30BAD-6FFA-4B99-82E8-6114E042A727}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{99C63DC6-88B3-4F20-B73D-F960DCE40513}"
 EndProject
