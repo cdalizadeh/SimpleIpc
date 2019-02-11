@@ -11,7 +11,7 @@ namespace SimpleIpc.Client
 {
     public abstract class ClientConnection : Connection
     {
-        private static readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private int _port;
 
         protected ClientConnection(int port = 13001)
@@ -21,7 +21,7 @@ namespace SimpleIpc.Client
 
         protected void ConnectToServer()
         {
-            _log.Debug("Establishing a connection");
+            Log.Debug("Establishing a connection");
             IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
             IPAddress ipAddress = ipHostInfo.AddressList[0];
             IPEndPoint remoteEP = new IPEndPoint(ipAddress, _port);
@@ -32,7 +32,7 @@ namespace SimpleIpc.Client
 
         protected void SendControl(ControlBytes controlByte, string message = null)
         {
-            _log.Debug($"Sending control (byte = {controlByte}, message = {message})");
+            Log.Debug($"Sending control (byte = {controlByte}, message = {message})");
             byte[] bytesToSend;
             if (message != null)
             {

@@ -12,7 +12,7 @@ namespace SimpleIpc.Shared
     /// </summary>
     public abstract class Connection : IDisposable
     {
-        private static readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private const int _maxIncomingMessageLength = 1024;
         private volatile bool _disposed = false;
         private volatile bool _receiving = false;
@@ -29,23 +29,26 @@ namespace SimpleIpc.Shared
         {
             if (!_sending)
             {
-                _log.Info("Initializing send loop");
+                Log.Info("Initializing send loop");
                 _sending = true;
                 Action<byte[]> onNext = (bytes) => 
                 {
+                    // Check for empty string.
+                    if (bytes.Length == 0) return;
+
                     // Add delimiter to byte array before sending.
                     var delimitedBytes = new byte[bytes.Length + 1];
                     Array.Copy(bytes, delimitedBytes, bytes.Length);
                     delimitedBytes[bytes.Length] = (byte)ControlBytes.Delimiter;
                     _socket.Send(delimitedBytes);
                 };
-                Action<Exception> onError = (e) => _log.Error("Error in send subscription", e);
-                Action onCompleted = () => _log.Debug("Send subscription completed");
+                Action<Exception> onError = (e) => Log.Error("Error in send subscription", e);
+                Action onCompleted = () => Log.Debug("Send subscription completed");
                 _sendDataSubject.Subscribe(onNext, onError, onCompleted);
             }
             else
             {
-                _log.Warn($"{nameof(InitSend)} called more than once");
+                Log.Warn($"{nameof(InitSend)} called more than once");
             }
         }
 
@@ -56,13 +59,13 @@ namespace SimpleIpc.Shared
         {
             if (!_receiving)
             {
-                _log.Info("Initializing receive loop");
+                Log.Info("Initializing receive loop");
                 _receiving = true;
                 Task.Run(() => ReceiveLoopAsync());
             }
             else
             {
-                _log.Warn($"{nameof(InitReceive)} called more than once");
+                Log.Warn($"{nameof(InitReceive)} called more than once");
             }
         }
 
@@ -96,7 +99,7 @@ namespace SimpleIpc.Shared
                         // Handle remote disconnection (Windows).
                         if (se.ErrorCode == 10054)
                         {
-                            _log.Warn("Remote host disconnected");
+                            Log.Warn("Remote host disconnected");
                             Dispose();
                             break;
                         }
@@ -108,12 +111,12 @@ namespace SimpleIpc.Shared
                     // Handle remote disconnection (Linux).
                     if (numBytesReceived == 0)
                     {
-                        _log.Warn("Remote host disconnected");
+                        Log.Warn("Remote host disconnected");
                         Dispose();
                         break;
                     }
 
-                    _log.Debug($"Received message ({numBytesReceived} bytes)");
+                    Log.Debug($"Received message ({numBytesReceived} bytes)");
 
                     receivedMessage = bytesSegment.ToArray();
 
@@ -126,7 +129,7 @@ namespace SimpleIpc.Shared
             }
             catch (Exception e)
             {
-                _log.Error("Error in receive loop", e);
+                Log.Error("Error in receive loop", e);
             }
         }
 
@@ -160,7 +163,7 @@ namespace SimpleIpc.Shared
         public void Dispose(){
             if (!_disposed)
             {
-                _log.Info("Disposing connection");
+                Log.Info("Disposing connection");
                 _disposed = true;
                 _socket?.Shutdown(SocketShutdown.Both);
                 _socket?.Close();

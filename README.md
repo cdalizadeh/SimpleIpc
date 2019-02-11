@@ -19,7 +19,7 @@ namespace SimpleIpc.Shared
     }
 }
 ```
-SimpleIpc exposes data received on the Subscriber as a Reactive X Observable. The server makes use of Reactive X internally to messages and connections.
+SimpleIpc exposes data received on the Subscriber as a ReactiveX Observable. The server makes use of Reactive X internally to messages and connections.
 
 To try SimpleIpc for yourself:
 1. Clone the repository

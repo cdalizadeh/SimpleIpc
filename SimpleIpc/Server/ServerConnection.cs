@@ -14,7 +14,7 @@ namespace SimpleIpc.Server
 {
     internal class ServerConnection : Connection
     {
-        private static readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public IObserver<byte[]> SendData => _sendDataSubject;
         public IObservable<string> DataReceived => _dataReceivedSubject

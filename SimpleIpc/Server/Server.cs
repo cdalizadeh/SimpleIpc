@@ -13,7 +13,7 @@ namespace SimpleIpc.Server
 {
     public class Server
     {
-        private static readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly int _port;
         private Socket _listener;
         private bool _listening = false;
@@ -22,7 +22,7 @@ namespace SimpleIpc.Server
 
         public Server(int port = 13001)
         {
-            _log.Info("Creating new server");
+            Log.Info("Creating new server");
             _port = port;
 
             Subscriber.Publishers = _publishers;
@@ -32,7 +32,7 @@ namespace SimpleIpc.Server
         {
             if (!_listening)
             {
-                _log.Info("Listening for connections");
+                Log.Info("Listening for connections");
                 _listening = true;
 
                 IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
@@ -49,12 +49,13 @@ namespace SimpleIpc.Server
             }
             else
             {
-                _log.Warn($"{nameof(StartListening)} called more than once");
+                Log.Warn($"{nameof(StartListening)} called more than once");
             }
         }
 
         public ISubscriberClient CreateLocalSubscriber()
         {
+            Log.Info("Creating local subscriber client");
             var subscriber = new LocalSubscriberClient();
             _subscribers.Add(subscriber);
 
@@ -63,6 +64,7 @@ namespace SimpleIpc.Server
 
         public IPublisherClient CreateLocalPublisher(string publisherId)
         {
+            Log.Info("Creating local publisher client");
             var publisher = new LocalPublisherClient();
             _publishers.Add(publisherId, publisher);
 
@@ -71,7 +73,7 @@ namespace SimpleIpc.Server
 
         private async void StartReceiveLoop()
         {
-            _log.Info("Waiting for a connection");
+            Log.Info("Waiting for a connection");
             while (true)
             {
                 Socket socket = await _listener.AcceptAsync();
@@ -86,7 +88,7 @@ namespace SimpleIpc.Server
         {
             try
             {
-                _log.Debug("Handling new connection");
+                Log.Debug("Handling new connection");
                 var serverConnection = new ServerConnection(socket);
                 var registrationTask = serverConnection.ControlReceived.Take(1).ToTask();
                 serverConnection.InitReceive();
@@ -99,16 +101,16 @@ namespace SimpleIpc.Server
                 else if (registration.Control == ControlBytes.RegisterSubscriber)
                 {
                     _subscribers.Add(new RemoteSubscriber(serverConnection));
-                    _log.Info("New Subscriber registered");
+                    Log.Info("New Subscriber registered");
                 }
                 else
                 {
-                    _log.Error("Non-registration control byte sent in first message");
+                    Log.Error("Non-registration control byte sent in first message");
                 }
             }
             catch(Exception e)
             {
-                _log.Error("Failed to handle new connection", e);
+                Log.Error("Failed to handle new connection", e);
             }
         }
 
@@ -123,7 +125,7 @@ namespace SimpleIpc.Server
             };
             publisher.DataReceived.Subscribe((s)=>{}, onCompleted);
             
-            _log.Info($"New Publisher registered (ID = {publisherId})");
+            Log.Info($"New Publisher registered (ID = {publisherId})");
         }
 
         private void CreateRemoteSubscriber(string subscriberId)
