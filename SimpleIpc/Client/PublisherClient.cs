@@ -8,12 +8,10 @@ namespace SimpleIpc.Client
     public class PublisherClient : ClientConnection, IPublisherClient
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private string _publisherId;
 
-        public PublisherClient(string publisherId, int port = 13001) : base(port)
+        public PublisherClient(int port = 13001) : base(port)
         {
-            Log.Info($"Creating new publisher (publisherId = {publisherId})");
-            _publisherId = publisherId;
+            Log.Info("Creating new publisher");
         }
 
         public void Connect()
@@ -22,7 +20,7 @@ namespace SimpleIpc.Client
             ConnectToServer();
             Log.Info("Registering as publisher");
             InitSend();
-            SendControl(ControlBytes.RegisterPublisher, _publisherId);
+            SendControl(ControlBytes.RegisterPublisher);
             Log.Info("Successfully connected and registered");
         }
 
@@ -31,6 +29,18 @@ namespace SimpleIpc.Client
             Log.Debug($"Sending message ({message})");
             var encodedMsg = Encoding.ASCII.GetBytes(message);
             _sendDataSubject.OnNext(encodedMsg);
+        }
+
+        public void Publish(string channelId)
+        {
+            Log.Info($"Publishing to ({channelId})");
+            SendControl(ControlBytes.Publish, channelId);
+        }
+
+        public void Unpublish(string channelId)
+        {
+            Log.Info($"Unpublishing from ({channelId})");
+            SendControl(ControlBytes.Unpublish, channelId);
         }
     }
 }

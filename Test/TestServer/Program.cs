@@ -34,7 +34,7 @@ namespace TestServer
             {
                 _localSubscriber = server.CreateLocalSubscriber();
                 _localSubscriber.Subscribe("pub21");
-                _localSubscriber.DataReceived.Subscribe((s) => Log.Debug($"Received Message: {s}"));
+                _localSubscriber.MessageReceived.Subscribe((s) => Log.Debug($"Received Message: {s}"));
             }
 
             Log.Info("Test server ready");

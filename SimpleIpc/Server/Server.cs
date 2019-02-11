@@ -14,18 +14,19 @@ namespace SimpleIpc.Server
     public class Server
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
+        private object _syncRoot = new object();
         private readonly int _port;
         private Socket _listener;
         private bool _listening = false;
-        private Dictionary<string, IPublisher> _publishers = new Dictionary<string, IPublisher>();
-        private List<ISubscriber> _subscribers = new List<ISubscriber>();
+
+        private Dictionary<string, List<IPublisher>> _publishers = new Dictionary<string, List<IPublisher>>();
+        private Dictionary<string, List<ISubscriber>> _subscribers = new Dictionary<string, List<ISubscriber>>();
 
         public Server(int port = 13001)
         {
             Log.Info("Creating new server");
             _port = port;
-
-            Subscriber.Publishers = _publishers;
         }
 
         public void StartListening()
@@ -53,24 +54,6 @@ namespace SimpleIpc.Server
             }
         }
 
-        public ISubscriberClient CreateLocalSubscriber()
-        {
-            Log.Info("Creating local subscriber client");
-            var subscriber = new LocalSubscriberClient();
-            _subscribers.Add(subscriber);
-
-            return subscriber;
-        }
-
-        public IPublisherClient CreateLocalPublisher(string publisherId)
-        {
-            Log.Info("Creating local publisher client");
-            var publisher = new LocalPublisherClient();
-            _publishers.Add(publisherId, publisher);
-
-            return publisher;
-        }
-
         private async void StartReceiveLoop()
         {
             Log.Info("Waiting for a connection");
@@ -95,13 +78,11 @@ namespace SimpleIpc.Server
                 var registration = await registrationTask;
                 if (registration.Control == ControlBytes.RegisterPublisher)
                 {
-                    var publisherId = registration.Data;
-                    CreateRemotePublisher(publisherId, serverConnection);
+                    CreateRemotePublisher(serverConnection);
                 }
                 else if (registration.Control == ControlBytes.RegisterSubscriber)
                 {
-                    _subscribers.Add(new RemoteSubscriber(serverConnection));
-                    Log.Info("New Subscriber registered");
+                    CreateRemoteSubscriber(serverConnection);
                 }
                 else
                 {
@@ -114,21 +95,70 @@ namespace SimpleIpc.Server
             }
         }
 
-        private void CreateRemotePublisher(string publisherId, ServerConnection serverConnection)
+        private void CreateRemotePublisher(ServerConnection serverConnection)
         {
             var publisher = new RemotePublisher(serverConnection);
-            _publishers.Add(publisherId, publisher);
-
-            Action onCompleted = () =>
-            {
-                _publishers.Remove(publisherId);
-            };
-            publisher.DataReceived.Subscribe((s)=>{}, onCompleted);
-            
-            Log.Info($"New Publisher registered (ID = {publisherId})");
         }
 
-        private void CreateRemoteSubscriber(string subscriberId)
+        private void CreateRemoteSubscriber(ServerConnection serverConnection)
+        {
+            var subscriber = new RemoteSubscriber(serverConnection);
+        }
+
+        public ISubscriberClient CreateLocalSubscriber()
+        {
+            Log.Info("Creating local subscriber client");
+            var subscriber = new LocalSubscriberClient();
+
+
+
+            return subscriber;
+        }
+
+        public IPublisherClient CreateLocalPublisher(string publisherId)
+        {
+            Log.Info("Creating local publisher client");
+            var publisher = new LocalPublisherClient();
+            
+
+
+            return publisher;
+        }
+
+        private void InitializeIPublisher(IPublisher publisher)
+        {
+            Action<string> onPublishReceived = (channelId) =>
+            {
+                lock (_syncRoot)
+                {
+                    // Register publisher under channelId.
+                    if (!_publishers.ContainsKey(channelId))
+                    {
+                        _publishers[channelId] = new List<IPublisher>();
+                    }
+                    _publishers[channelId].Add(publisher);
+
+                    // Link publisher to existing subscribers.
+                    if (_subscribers.ContainsKey(channelId))
+                    {
+                        var subscribers = _subscribers[channelId];
+                        foreach (var subscriber in subscribers)
+                        {
+                            publisher.MessageReceived.Subscribe(subscriber.MessageObserver);
+                        }
+                    }
+                }
+            };
+
+            publisher.PublishReceived.Subscribe(onPublishReceived);
+
+            Action<string> onUnpublishReceived = (channelId) =>
+            {
+
+            };
+        }
+
+        private void InitializeISubscriber(ISubscriber subscriber)
         {
 
         }

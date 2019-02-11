@@ -4,9 +4,9 @@ namespace SimpleIpc.Shared
 {
     public interface ISubscriberClient
     {
-        IObservable<string> DataReceived {get;}
+        IObservable<string> MessageReceived {get;}
 
-        void Subscribe(string publisherId);
-        void Unsubscribe(string publisherId);
+        void Subscribe(string channelId);
+        void Unsubscribe(string channelId);
     }
 }

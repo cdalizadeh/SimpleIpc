@@ -1,8 +1,12 @@
-﻿namespace SimpleIpc.Server
+﻿using System;
+
+namespace SimpleIpc.Server
 {
     public interface ISubscriber
     {
-        void Subscribe(string publisherId);
-        void Unsubscribe(string publisherId);
+        IObserver<string> MessageObserver {get;}
+
+        IObservable<string> SubscribeReceived {get;}
+        IObservable<string> UnsubscribeReceived {get;}
     }
 }

@@ -10,7 +10,7 @@ namespace SimpleIpc.Client
     public class SubscriberClient : ClientConnection, ISubscriberClient
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        public IObservable<string> DataReceived => _dataReceivedSubject
+        public IObservable<string> MessageReceived => _dataReceivedSubject
             .Select(bytes => Encoding.ASCII.GetString(bytes, 0, bytes.Length));
 
         public SubscriberClient(int port = 13001) : base(port)
@@ -28,16 +28,16 @@ namespace SimpleIpc.Client
             Log.Info("Successfully connected to server");
         }
 
-        public void Subscribe(string publisherId)
+        public void Subscribe(string channelId)
         {
-            Log.Info($"Subscribing to ({publisherId})");
-            SendControl(ControlBytes.Subscribe, publisherId);
+            Log.Info($"Subscribing to ({channelId})");
+            SendControl(ControlBytes.Subscribe, channelId);
         }
 
-        public void Unsubscribe(string publisherId)
+        public void Unsubscribe(string channelId)
         {
-            Log.Info($"Unsubscribing from ({publisherId})");
-            SendControl(ControlBytes.Unsubscribe, publisherId);
+            Log.Info($"Unsubscribing from ({channelId})");
+            SendControl(ControlBytes.Unsubscribe, channelId);
         }
     }
 }

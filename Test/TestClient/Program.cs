@@ -54,7 +54,7 @@ namespace TestClient
             SubscriberClient subscriber = new SubscriberClient();
             subscriber.Connect();
             subscriber.Subscribe("pub21");
-            subscriber.DataReceived.Subscribe((s) => Log.Debug($"Received Message: {s}"));
+            subscriber.MessageReceived.Subscribe((s) => Log.Debug($"Received Message: {s}"));
             
             Log.Info("Waiting");
             while (true)

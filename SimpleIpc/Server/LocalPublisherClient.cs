@@ -6,8 +6,13 @@ namespace SimpleIpc.Server
 {
     public class LocalPublisherClient : IPublisherClient, IPublisher
     {
-        private readonly Subject<string> _dataReceived = new Subject<string>();
-        public IObservable<string> DataReceived => _dataReceived;
+        private readonly Subject<string> _messageReceived = new Subject<string>();
+        private readonly Subject<string> _publishReceived = new Subject<string>();
+        private readonly Subject<string> _unpublishReceived = new Subject<string>();
+        
+        public IObservable<string> MessageReceived => _messageReceived;
+        public IObservable<string> PublishReceived => _publishReceived;
+        public IObservable<string> UnpublishReceived => _unpublishReceived;
 
         public LocalPublisherClient()
         {
@@ -16,7 +21,17 @@ namespace SimpleIpc.Server
 
         public void Send(string message)
         {
-            _dataReceived.OnNext(message);
+            _messageReceived.OnNext(message);
+        }
+
+        public void Publish(string channelId)
+        {
+            _publishReceived.OnNext(channelId);
+        }
+
+        public void Unpublish(string channelId)
+        {
+            _unpublishReceived.OnNext(channelId);
         }
     }
 }
