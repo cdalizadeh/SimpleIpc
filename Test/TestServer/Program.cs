@@ -27,13 +27,14 @@ namespace TestServer
 
             if (opts.CreateLocalPublisher)
             {
-                _localPublisher = server.CreateLocalPublisher("pub21");
+                _localPublisher = server.CreateLocalPublisher();
+                _localPublisher.Publish("test-channel");
             }
 
             if (opts.CreateLocalSubscriber)
             {
                 _localSubscriber = server.CreateLocalSubscriber();
-                _localSubscriber.Subscribe("pub21");
+                _localSubscriber.Subscribe("test-channel");
                 _localSubscriber.MessageReceived.Subscribe((s) => Log.Debug($"Received Message: {s}"));
             }
 

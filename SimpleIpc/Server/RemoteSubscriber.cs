@@ -15,9 +15,9 @@ namespace SimpleIpc.Server
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly ServerConnection _connection;
 
-        private Subject<string> _messageSubject;
+        private Subject<string> _messageSubject = new Subject<string>();
 
-        public IObserver<string> MessageObserver {get;}
+        public IObserver<string> MessageObserver => _messageSubject;
         public IObservable<string> SubscribeReceived {get;}
         public IObservable<string> UnsubscribeReceived {get;}
 

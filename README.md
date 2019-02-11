@@ -8,14 +8,21 @@ namespace SimpleIpc.Shared
     public interface IPublisherClient
     {
         void Send(string message);
+
+        void Publish(string channelId);
+        void Unpublish(string channelId);
+
+        void Dispose();
     }
 
     public interface ISubscriberClient
     {
-        IObservable<string> DataReceived {get;}
+        IObservable<string> MessageReceived {get;}
 
-        void Subscribe(string publisherId);
-        void Unsubscribe(string publisherId);
+        void Subscribe(string channelId);
+        void Unsubscribe(string channelId);
+
+        void Dispose();
     }
 }
 ```

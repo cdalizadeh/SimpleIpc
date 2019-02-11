@@ -98,29 +98,29 @@ namespace SimpleIpc.Server
         private void CreateRemotePublisher(ServerConnection serverConnection)
         {
             var publisher = new RemotePublisher(serverConnection);
+            InitializeIPublisher(publisher);
         }
 
         private void CreateRemoteSubscriber(ServerConnection serverConnection)
         {
             var subscriber = new RemoteSubscriber(serverConnection);
+            InitializeISubscriber(subscriber);
         }
 
         public ISubscriberClient CreateLocalSubscriber()
         {
             Log.Info("Creating local subscriber client");
             var subscriber = new LocalSubscriberClient();
-
-
+            InitializeISubscriber(subscriber);
 
             return subscriber;
         }
 
-        public IPublisherClient CreateLocalPublisher(string publisherId)
+        public IPublisherClient CreateLocalPublisher()
         {
             Log.Info("Creating local publisher client");
             var publisher = new LocalPublisherClient();
-            
-
+            InitializeIPublisher(publisher);
 
             return publisher;
         }
@@ -131,12 +131,18 @@ namespace SimpleIpc.Server
             {
                 lock (_syncRoot)
                 {
-                    // Register publisher under channelId.
+                    // Register publisher with the given channelId.
                     if (!_publishers.ContainsKey(channelId))
                     {
                         _publishers[channelId] = new List<IPublisher>();
                     }
-                    _publishers[channelId].Add(publisher);
+                    
+                    List<IPublisher> publishersList = _publishers[channelId];
+                    if (publishersList.Contains(publisher))
+                    {
+                        throw new Exception($"publisher is already publishing to channel {channelId}");
+                    }
+                    publishersList.Add(publisher);
 
                     // Link publisher to existing subscribers.
                     if (_subscribers.ContainsKey(channelId))
@@ -151,16 +157,40 @@ namespace SimpleIpc.Server
             };
 
             publisher.PublishReceived.Subscribe(onPublishReceived);
-
-            Action<string> onUnpublishReceived = (channelId) =>
-            {
-
-            };
         }
 
         private void InitializeISubscriber(ISubscriber subscriber)
         {
+            Action<string> onSubscribeReceived = (channelId) =>
+            {
+                lock (_syncRoot)
+                {
+                    // Register subscriber with the given channelId.
+                    if (!_subscribers.ContainsKey(channelId))
+                    {
+                        _subscribers[channelId] = new List<ISubscriber>();
+                    }
 
+                    List<ISubscriber> subscribersList = _subscribers[channelId];
+                    if (subscribersList.Contains(subscriber))
+                    {
+                        throw new Exception($"subscriber is already subscribing to channel {channelId}");
+                    }
+                    subscribersList.Add(subscriber);
+
+                    // Link subscriber to existing publishers.
+                    if (_publishers.ContainsKey(channelId))
+                    {
+                        var publishers = _publishers[channelId];
+                        foreach (var publisher in publishers)
+                        {
+                            publisher.MessageReceived.Subscribe(subscriber.MessageObserver);
+                        }
+                    }
+                }
+            };
+
+            subscriber.SubscribeReceived.Subscribe(onSubscribeReceived);
         }
     }
 }

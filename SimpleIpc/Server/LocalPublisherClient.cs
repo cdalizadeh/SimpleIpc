@@ -33,5 +33,10 @@ namespace SimpleIpc.Server
         {
             _unpublishReceived.OnNext(channelId);
         }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

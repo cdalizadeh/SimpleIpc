@@ -8,5 +8,7 @@ namespace SimpleIpc.Shared
 
         void Publish(string channelId);
         void Unpublish(string channelId);
+
+        void Dispose();
     }
 }
