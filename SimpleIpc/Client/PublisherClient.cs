@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 using log4net;
 using SimpleIpc.Shared;

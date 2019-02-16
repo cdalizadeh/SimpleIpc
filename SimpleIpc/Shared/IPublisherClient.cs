@@ -1,5 +1,3 @@
-using System;
-
 namespace SimpleIpc.Shared
 {
     public interface IPublisherClient

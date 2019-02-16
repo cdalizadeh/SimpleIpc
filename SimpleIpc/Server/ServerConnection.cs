@@ -1,12 +1,8 @@
 using System;
 using System.Linq;
-using System.Net;
 using System.Net.Sockets;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using log4net;
 using SimpleIpc.Shared;
 
