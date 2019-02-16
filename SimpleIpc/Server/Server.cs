@@ -54,7 +54,6 @@ namespace SimpleIpc.Server
 
         private async void StartReceiveLoop()
         {
-            Log.Info("Waiting for a connection");
             while (true)
             {
                 Socket socket = await _listener.AcceptAsync();
