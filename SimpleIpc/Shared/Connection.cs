@@ -25,7 +25,7 @@ namespace SimpleIpc.Shared
         /// <summary>
         /// Creates a socket subscription to _sendDataSubject, enabling Connection to send data
         /// </summary>
-        public void InitSend()
+        internal void InitSend()
         {
             if (!_sending)
             {
@@ -55,7 +55,7 @@ namespace SimpleIpc.Shared
         /// <summary>
         /// Starts the receive loop, enabling the connection socket to receive messages and publish them to _dataReceivedSubject
         /// </summary>
-        public void InitReceive()
+        internal void InitReceive()
         {
             if (!_receiving)
             {
