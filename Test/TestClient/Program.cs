@@ -37,16 +37,28 @@ namespace TestClient
             Log.Info("Starting client publisher loop");
             while (true)
             {
-                var message = Console.ReadLine();
-                if (message == "dispose")
+                var newLine = Console.ReadLine();
+                var newLineSplit = newLine.Split(' ');
+
+                if (newLineSplit[0] == "dispose")
                 {
                     publisher.Dispose();
+                    break;
+                }
+                else if (newLineSplit[0] == "publish" && newLineSplit.Length > 1)
+                {
+                    publisher.Publish(newLineSplit[1]);
+                }
+                else if (newLineSplit[0] == "unpublish" && newLineSplit.Length > 1)
+                {
+                    publisher.Unpublish(newLineSplit[1]);
                 }
                 else
                 {
-                    publisher.Send(message);
+                    publisher.Send(newLine);
                 }
             }
+            Log.Info("Terminating PublisherClient test program");
         }
 
         private static void StartSubscriberClient()
@@ -60,12 +72,24 @@ namespace TestClient
             Log.Info("Waiting");
             while (true)
             {
-                var message = Console.ReadLine();
-                if (message == "dispose")
+                var newLine = Console.ReadLine();
+                var newLineSplit = newLine.Split(' ');
+
+                if (newLineSplit[0] == "dispose")
                 {
                     subscriber.Dispose();
+                    break;
+                }
+                else if (newLineSplit[0] == "subscribe" && newLineSplit.Length > 1)
+                {
+                    subscriber.Subscribe(newLineSplit[1]);
+                }
+                else if (newLineSplit[0] == "unsubscribe" && newLineSplit.Length > 1)
+                {
+                    subscriber.Unsubscribe(newLineSplit[1]);
                 }
             }
+            Log.Info("Terminating SubscriberClient test program");
         }
     }
 }

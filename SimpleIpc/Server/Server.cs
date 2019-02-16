@@ -20,8 +20,7 @@ namespace SimpleIpc.Server
         private Socket _listener;
         private bool _listening = false;
 
-        private Dictionary<string, List<IPublisher>> _publishers = new Dictionary<string, List<IPublisher>>();
-        private Dictionary<string, List<ISubscriber>> _subscribers = new Dictionary<string, List<ISubscriber>>();
+        private Dictionary<string, Channel> _channels = new Dictionary<string, Channel>();
 
         public Server(int port = 13001)
         {
@@ -131,32 +130,38 @@ namespace SimpleIpc.Server
             {
                 lock (_syncRoot)
                 {
-                    // Register publisher with the given channelId.
-                    if (!_publishers.ContainsKey(channelId))
+                    if (!_channels.ContainsKey(channelId))
                     {
-                        _publishers[channelId] = new List<IPublisher>();
+                        _channels[channelId] = new Channel();
                     }
-                    
-                    List<IPublisher> publishersList = _publishers[channelId];
-                    if (publishersList.Contains(publisher))
-                    {
-                        throw new Exception($"publisher is already publishing to channel {channelId}");
-                    }
-                    publishersList.Add(publisher);
 
-                    // Link publisher to existing subscribers.
-                    if (_subscribers.ContainsKey(channelId))
-                    {
-                        var subscribers = _subscribers[channelId];
-                        foreach (var subscriber in subscribers)
-                        {
-                            publisher.MessageReceived.Subscribe(subscriber.MessageObserver);
-                        }
-                    }
+                    _channels[channelId].AddPublisher(publisher);
                 }
             };
 
             publisher.PublishReceived.Subscribe(onPublishReceived);
+
+            Action<string> OnUnpublishReceived = (channelId) =>
+            {
+                lock (_syncRoot)
+                {
+                    if (!_channels.ContainsKey(channelId))
+                    {
+                        Log.Error($"channel specified in unpublish request does not exist (channel = {channelId})");
+                        return;
+                    }
+
+                    var channel = _channels[channelId];
+                    channel.RemovePublisher(publisher);
+
+                    if (channel.IsEmpty)
+                    {
+                        _channels.Remove(channelId);
+                    }
+                }
+            };
+
+            publisher.UnpublishReceived.Subscribe(OnUnpublishReceived);
         }
 
         private void InitializeISubscriber(ISubscriber subscriber)
@@ -165,32 +170,38 @@ namespace SimpleIpc.Server
             {
                 lock (_syncRoot)
                 {
-                    // Register subscriber with the given channelId.
-                    if (!_subscribers.ContainsKey(channelId))
+                    if (!_channels.ContainsKey(channelId))
                     {
-                        _subscribers[channelId] = new List<ISubscriber>();
+                        _channels[channelId] = new Channel();
                     }
 
-                    List<ISubscriber> subscribersList = _subscribers[channelId];
-                    if (subscribersList.Contains(subscriber))
-                    {
-                        throw new Exception($"subscriber is already subscribing to channel {channelId}");
-                    }
-                    subscribersList.Add(subscriber);
-
-                    // Link subscriber to existing publishers.
-                    if (_publishers.ContainsKey(channelId))
-                    {
-                        var publishers = _publishers[channelId];
-                        foreach (var publisher in publishers)
-                        {
-                            publisher.MessageReceived.Subscribe(subscriber.MessageObserver);
-                        }
-                    }
+                    _channels[channelId].AddSubscriber(subscriber);
                 }
             };
 
             subscriber.SubscribeReceived.Subscribe(onSubscribeReceived);
+
+            Action<string> onUnsubscribeReceived = (channelId) =>
+            {
+                lock (_syncRoot)
+                {
+                    if (!_channels.ContainsKey(channelId))
+                    {
+                        Log.Error($"channel specified in unsubscribe request does not exist (channel = {channelId})");
+                        return;
+                    }
+
+                    var channel = _channels[channelId];
+                    channel.RemoveSubscriber(subscriber);
+
+                    if (channel.IsEmpty)
+                    {
+                        _channels.Remove(channelId);
+                    }
+                }
+            };
+
+            subscriber.UnsubscribeReceived.Subscribe(onUnsubscribeReceived);
         }
     }
 }

@@ -35,7 +35,7 @@ namespace TestServer
             {
                 _localSubscriber = server.CreateLocalSubscriber();
                 _localSubscriber.Subscribe("test-channel");
-                _localSubscriber.MessageReceived.Subscribe((s) => Log.Debug($"Received Message: {s}"));
+                _localSubscriber.MessageReceived.Subscribe((s) => Log.Debug($"LocalSubscriber received message: {s}"));
             }
 
             Log.Info("Test server ready");
