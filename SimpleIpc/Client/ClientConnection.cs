@@ -12,20 +12,29 @@ namespace SimpleIpc.Client
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private int _port;
+        private IPAddress _ipAddress;
 
-        protected ClientConnection(int port = 13001)
+        protected ClientConnection(string ipAddress, int port)
         {
             _port = port;
+
+            if (ipAddress == null)
+            {
+                IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
+                _ipAddress = ipHostInfo.AddressList[0];
+            }
+            else
+            {
+                _ipAddress = IPAddress.Parse(ipAddress);
+            }
         }
 
         protected void ConnectToServer()
         {
             Log.Debug("Establishing a connection");
-            IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress ipAddress = ipHostInfo.AddressList[0];
-            IPEndPoint remoteEP = new IPEndPoint(ipAddress, _port);
+            IPEndPoint remoteEP = new IPEndPoint(_ipAddress, _port);
 
-            _socket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            _socket = new Socket(_ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             _socket.Connect(remoteEP);
         }
 

@@ -8,7 +8,7 @@ namespace SimpleIpc.Client
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public PublisherClient(int port = 13001) : base(port)
+        public PublisherClient(string ipAddress = null, int port = 13001) : base(ipAddress, port)
         {
             Log.Info("Creating new publisher");
         }

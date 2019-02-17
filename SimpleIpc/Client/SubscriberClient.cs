@@ -13,7 +13,7 @@ namespace SimpleIpc.Client
         public IObservable<string> MessageReceived => _dataReceivedSubject
             .Select(bytes => Encoding.ASCII.GetString(bytes, 0, bytes.Length));
 
-        public SubscriberClient(int port = 13001) : base(port)
+        public SubscriberClient(string ipAddress = null, int port = 13001) : base(ipAddress, port)
         {
             Log.Info("Creating new subscriber");
         }

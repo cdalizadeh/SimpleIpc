@@ -19,18 +19,18 @@ namespace TestClient
         {
             if (opts.ClientType == "publisher")
             {
-                StartPublisherClient();
+                StartPublisherClient(opts);
             }
             else if (opts.ClientType == "subscriber")
             {
-                StartSubscriberClient();
+                StartSubscriberClient(opts);
             }
         }
 
-        private static void StartPublisherClient()
+        private static void StartPublisherClient(CommandLineOptions opts)
         {
             Log.Info("Starting test client as Publisher");
-            PublisherClient publisher = new PublisherClient();
+            PublisherClient publisher = new PublisherClient(opts.IpAddress, opts.Port);
             publisher.Connect();
             publisher.Publish("test-channel");
 
@@ -61,10 +61,10 @@ namespace TestClient
             Log.Info("Terminating PublisherClient test program");
         }
 
-        private static void StartSubscriberClient()
+        private static void StartSubscriberClient(CommandLineOptions opts)
         {
             Log.Info("Starting test client as Subscriber");
-            SubscriberClient subscriber = new SubscriberClient();
+            SubscriberClient subscriber = new SubscriberClient(opts.IpAddress, opts.Port);
             subscriber.Connect();
             subscriber.Subscribe("test-channel");
             subscriber.MessageReceived.Subscribe((s) => Log.Debug($"Received Message: {s}"));
