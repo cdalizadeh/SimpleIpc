@@ -2,7 +2,7 @@
 
 namespace SimpleIpc.Server
 {
-    public interface IPublisher
+    internal interface IPublisher
     {
         IObservable<string> MessageReceived { get; }
 

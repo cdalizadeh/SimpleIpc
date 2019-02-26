@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SimpleIpc.Server
 {
-    public class Channel
+    internal class Channel
     {
         private List<ISubscriber> _subscribers = new List<ISubscriber>();
         private List<IPublisher> _publishers = new List<IPublisher>();

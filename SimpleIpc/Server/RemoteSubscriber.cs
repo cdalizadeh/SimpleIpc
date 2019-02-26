@@ -7,7 +7,7 @@ using SimpleIpc.Shared;
 
 namespace SimpleIpc.Server
 {
-    class RemoteSubscriber : ISubscriber
+    internal class RemoteSubscriber : ISubscriber
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly ServerConnection _connection;

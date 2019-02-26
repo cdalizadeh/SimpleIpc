@@ -1,6 +1,6 @@
 namespace SimpleIpc.Shared
 {
-    public enum ControlBytes : byte
+    internal enum ControlBytes : byte
     {
         Delimiter = (byte)0x81,
         Escape = (byte)0x80,

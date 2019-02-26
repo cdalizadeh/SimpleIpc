@@ -14,7 +14,7 @@ namespace SimpleIpc.Client
         private int _port;
         private IPAddress _ipAddress;
 
-        protected ClientConnection(string ipAddress, int port)
+        internal ClientConnection(string ipAddress, int port)
         {
             _port = port;
 
@@ -38,7 +38,7 @@ namespace SimpleIpc.Client
             _socket.Connect(remoteEP);
         }
 
-        protected void SendControl(ControlBytes controlByte, string message = null)
+        internal void SendControl(ControlBytes controlByte, string message = null)
         {
             Log.Debug($"Sending control (byte = {controlByte}, message = {message})");
             byte[] bytesToSend;

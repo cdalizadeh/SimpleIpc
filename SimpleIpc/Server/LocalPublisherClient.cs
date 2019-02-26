@@ -4,7 +4,7 @@ using SimpleIpc.Shared;
 
 namespace SimpleIpc.Server
 {
-    public class LocalPublisherClient : IPublisherClient, IPublisher
+    internal class LocalPublisherClient : IPublisherClient, IPublisher
     {
         private readonly Subject<string> _messageReceived = new Subject<string>();
         private readonly Subject<string> _publishReceived = new Subject<string>();
