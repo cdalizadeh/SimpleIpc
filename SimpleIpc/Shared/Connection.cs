@@ -118,7 +118,7 @@ namespace SimpleIpc.Shared
 
                     Log.Debug($"Received message ({numBytesReceived} bytes)");
 
-                    receivedMessage = bytesSegment.ToArray();
+                    receivedMessage = bytesSegment.Slice(0, numBytesReceived).ToArray();
 
                     var messages = SplitMessage(receivedMessage, (byte)ControlBytes.Delimiter);
                     foreach(var message in messages)
