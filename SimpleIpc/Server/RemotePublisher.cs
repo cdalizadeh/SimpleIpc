@@ -17,9 +17,9 @@ namespace SimpleIpc.Server
         public RemotePublisher(ServerConnection connection)
         {
             _connection = connection;
-            _connection.DataReceived.Subscribe((s) => Log.Debug("Received: " + s));
+            _connection.MessageReceived.Subscribe((s) => Log.Debug("Received: " + s));
 
-            MessageReceived = _connection.DataReceived;
+            MessageReceived = _connection.MessageReceived;
             PublishReceived = _connection.ControlReceived.Where((cc) => cc.Control == ControlBytes.Publish).Select((cc) => cc.Data);
             UnpublishReceived = _connection.ControlReceived.Where((cc) => cc.Control == ControlBytes.Unpublish).Select((cc) => cc.Data);
         }

@@ -1,7 +1,6 @@
 using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 using log4net;
 using SimpleIpc.Shared;
 
@@ -27,7 +26,7 @@ namespace SimpleIpc.Server
 
             _connection.InitSend();
             
-            _messageSubject.Select(message => Encoding.ASCII.GetBytes(message)).Subscribe(_connection.SendData);
+            _messageSubject.Select(message => DelimitationProvider.Delimit(message)).Subscribe(_connection.SendData);
         }
     }
 }

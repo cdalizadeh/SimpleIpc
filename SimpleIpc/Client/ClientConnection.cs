@@ -1,10 +1,7 @@
 using log4net;
 using SimpleIpc.Shared;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 
 namespace SimpleIpc.Client
 {
@@ -44,12 +41,11 @@ namespace SimpleIpc.Client
             byte[] bytesToSend;
             if (message != null)
             {
-                List<byte> encodedMessage = Encoding.ASCII.GetBytes(message).ToList();
-                bytesToSend = encodedMessage.Prepend((byte)controlByte).Prepend((byte)ControlBytes.Escape).ToArray();
+                bytesToSend = DelimitationProvider.Delimit(message, (byte)ControlBytes.Escape, (byte)controlByte);
             }
             else
             {
-                bytesToSend = new byte[]{(byte)ControlBytes.Escape, (byte)controlByte};
+                bytesToSend = DelimitationProvider.Delimit((byte)ControlBytes.Escape, (byte)(controlByte));
             }
             _sendDataSubject.OnNext(bytesToSend);
         }

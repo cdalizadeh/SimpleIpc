@@ -1,5 +1,6 @@
-using System;
-using System.Reflection;
+using System.Runtime.CompilerServices;
+
+[assembly:InternalsVisibleTo("UnitTests")]
 
 [assembly: System.Reflection.AssemblyCompanyAttribute("SimpleIpc")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]

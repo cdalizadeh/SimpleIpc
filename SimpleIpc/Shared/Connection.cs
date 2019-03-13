@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -34,16 +33,12 @@ namespace SimpleIpc.Shared
                 Action<byte[]> onNext = (bytes) => 
                 {
                     // Check for empty string.
-                    if (bytes.Length == 0) return;
+                    if (bytes.Length == 1) return;
 
-                    // Add delimiter to byte array before sending.
-                    var delimitedBytes = new byte[bytes.Length + 1];
-                    Array.Copy(bytes, delimitedBytes, bytes.Length);
-                    delimitedBytes[bytes.Length] = (byte)ControlBytes.Delimiter;
-                    _socket.Send(delimitedBytes);
+                    _socket.Send(bytes);
                 };
                 Action<Exception> onError = (e) => Log.Error("Error in send subscription", e);
-                Action onCompleted = () => Log.Debug("Send subscription completed");
+                Action onCompleted = () => Log.Info("Send subscription completed");
                 _sendDataSubject.Subscribe(onNext, onError, onCompleted);
             }
             else
@@ -75,21 +70,28 @@ namespace SimpleIpc.Shared
         /// <returns>The async completion task</returns>
         private async Task ReceiveLoopAsync()
         {
-            byte[] receiveBuffer;
-            byte[] receivedMessage;
-            ArraySegment<byte> bytesSegment;
-            int numBytesReceived;
+            byte[] receiveBuffer = new byte[_maxIncomingMessageLength];
 
             try
             {
                 while (!_disposed)
                 {
-                    receiveBuffer = new byte[_maxIncomingMessageLength];
-                    bytesSegment = new ArraySegment<byte>(receiveBuffer);
+                    var receiveBufferSegment = new ArraySegment<byte>(receiveBuffer);
 
                     try
                     {
-                        numBytesReceived = await _socket.ReceiveAsync(bytesSegment, SocketFlags.None);
+                        int numBytesReceived = await _socket.ReceiveAsync(receiveBufferSegment, SocketFlags.None);
+                        receiveBufferSegment = receiveBufferSegment.Slice(0, numBytesReceived);
+
+                        // Handle remote disconnection (Linux).
+                        if (numBytesReceived == 0)
+                        {
+                            Log.Warn("Remote host disconnected");
+                            Dispose();
+                            break;
+                        }
+
+                        Log.Debug($"Received message ({numBytesReceived} bytes)");
                     }
                     catch(SocketException se)
                     {
@@ -107,20 +109,8 @@ namespace SimpleIpc.Shared
                         // Handle other socket errors.
                         throw;
                     }
-
-                    // Handle remote disconnection (Linux).
-                    if (numBytesReceived == 0)
-                    {
-                        Log.Warn("Remote host disconnected");
-                        Dispose();
-                        break;
-                    }
-
-                    Log.Debug($"Received message ({numBytesReceived} bytes)");
-
-                    receivedMessage = bytesSegment.Slice(0, numBytesReceived).ToArray();
-
-                    var messages = SplitMessage(receivedMessage, (byte)ControlBytes.Delimiter);
+                    
+                    var messages = DelimitationProvider.Undelimit(receiveBufferSegment);
                     foreach(var message in messages)
                     {
                         _dataReceivedSubject.OnNext(message);
@@ -131,30 +121,6 @@ namespace SimpleIpc.Shared
             {
                 Log.Error("Error in receive loop", e);
             }
-        }
-
-        /// <summary>
-        /// Splits an array of bytes by a delimiter
-        /// </summary>
-        /// <param name="delimitedMessages">A byte array of messages separated by the delimiter</param>
-        /// <param name="delimiter">A byte that delimits messages</param>
-        /// <returns>A list of byte arrays, each an individual message</returns>
-        private List<byte[]> SplitMessage(byte[] delimitedMessages, byte delimiter)
-        {
-            List<byte[]> messages = new List<byte[]>();
-
-            var lastDelimiterIndex = -1;
-            var delimiterIndex = Array.FindIndex(delimitedMessages, b => b == delimiter);
-            while (delimiterIndex != -1)
-            {
-                var messageLength = delimiterIndex - lastDelimiterIndex - 1;
-                var newMessage = new byte[messageLength];
-                Array.Copy(delimitedMessages, lastDelimiterIndex + 1, newMessage, 0, messageLength);
-                messages.Add(newMessage);
-                lastDelimiterIndex = delimiterIndex;
-                delimiterIndex = Array.FindIndex(delimitedMessages, lastDelimiterIndex + 1, b => b == delimiter);
-            }
-            return messages;
         }
 
         /// <summary>

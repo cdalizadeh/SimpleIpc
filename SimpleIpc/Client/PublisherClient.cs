@@ -1,4 +1,3 @@
-using System.Text;
 using log4net;
 using SimpleIpc.Shared;
 
@@ -26,8 +25,8 @@ namespace SimpleIpc.Client
         public void Send(string message)
         {
             Log.Debug($"Sending message ({message})");
-            var encodedMsg = Encoding.ASCII.GetBytes(message);
-            _sendDataSubject.OnNext(encodedMsg);
+            var delimitedMessage = DelimitationProvider.Delimit(message);
+            _sendDataSubject.OnNext(delimitedMessage);
         }
 
         public void Publish(string channelId)
