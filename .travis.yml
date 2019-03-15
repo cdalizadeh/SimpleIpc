@@ -1,8 +1,8 @@
 language: csharp
-solution: SimpleIpc.sln
+mono: none
+dotnet: 2.1.502
 install:
-  - nuget restore SimpleIpc.sln
-  - nuget install NUnit.Console -Version 3.9.0 -OutputDirectory testrunner
+  - dotnet restore
 script:
-  - msbuild /p:Configuration=Release SimpleIpc.sln
-  - mono ./testrunner/NUnit.ConsoleRunner.3.9.0/tools/nunit3-console.exe ./Test/UnitTests/UnitTests.csproj
+ - dotnet build
+ - dotnet test ./Test/UnitTests/UnitTests.csproj
