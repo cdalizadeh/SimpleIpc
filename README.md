@@ -1,6 +1,6 @@
 # SimpleIpc
 
-[![Build Status](https://travis-ci.org/cdalizadeh/simple-ipc.svg?branch=master)](https://travis-ci.org/cdalizadeh/simple-ipc)
+[![Build Status](https://travis-ci.org/cdalizadeh/simpleipc.svg?branch=master)](https://travis-ci.org/cdalizadeh/simpleipc)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 SimpleIpc is a basic Interprocess Communication library written in C# for .NET Core. The library allows developers to create publishers that can pass messages over TCP to subscribers in another process. The interfaces for `PublisherClient` and `SubscriberClient` are quite simple:
