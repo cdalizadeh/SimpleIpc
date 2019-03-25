@@ -1,17 +1,23 @@
 using log4net;
 using SimpleIpc.Shared;
+using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Reactive.Linq;
+using System.Text;
 
 namespace SimpleIpc.Client
 {
-    public abstract class ClientConnection : Connection
+    internal sealed class ClientConnection : Connection
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private int _port;
         private IPAddress _ipAddress;
 
-        internal ClientConnection(string ipAddress, int port)
+        public IObservable<string> MessageReceived => _dataReceivedSubject
+            .Select(bytes => Encoding.ASCII.GetString(bytes, 0, bytes.Length));
+
+        public ClientConnection(string ipAddress, int port)
         {
             _port = port;
 
@@ -26,7 +32,7 @@ namespace SimpleIpc.Client
             }
         }
 
-        protected void ConnectToServer()
+        public void ConnectToServer()
         {
             Log.Debug("Establishing a connection");
             IPEndPoint remoteEP = new IPEndPoint(_ipAddress, _port);
@@ -35,7 +41,7 @@ namespace SimpleIpc.Client
             _socket.Connect(remoteEP);
         }
 
-        internal void SendControl(ControlBytes controlByte, string message = null)
+        public void SendControl(ControlBytes controlByte, string message = null)
         {
             Log.Debug($"Sending control (byte = {controlByte}, message = {message})");
             byte[] bytesToSend;
@@ -48,6 +54,12 @@ namespace SimpleIpc.Client
                 bytesToSend = DelimitationProvider.Delimit((byte)ControlBytes.Escape, (byte)(controlByte));
             }
             _sendDataSubject.OnNext(bytesToSend);
+        }
+
+        public void SendData(string data)
+        {
+            var delimitedData = DelimitationProvider.Delimit(data);
+            _sendDataSubject.OnNext(delimitedData);
         }
     }
 }

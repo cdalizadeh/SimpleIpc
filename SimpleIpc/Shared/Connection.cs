@@ -9,7 +9,7 @@ namespace SimpleIpc.Shared
     /// <summary>
     /// Abstract wrapper class around a Socket. Exposes IO as Rx Subjects. Delimits messages.
     /// </summary>
-    public abstract class Connection : IDisposable
+    internal abstract class Connection : IDisposable
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private const int _maxIncomingMessageLength = 1024;
@@ -24,7 +24,7 @@ namespace SimpleIpc.Shared
         /// <summary>
         /// Creates a socket subscription to _sendDataSubject, enabling Connection to send data
         /// </summary>
-        internal void InitSend()
+        public void InitSend()
         {
             if (!_sending)
             {
@@ -50,7 +50,7 @@ namespace SimpleIpc.Shared
         /// <summary>
         /// Starts the receive loop, enabling the connection socket to receive messages and publish them to _dataReceivedSubject
         /// </summary>
-        internal void InitReceive()
+        public void InitReceive()
         {
             if (!_receiving)
             {

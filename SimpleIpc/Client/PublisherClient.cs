@@ -3,42 +3,48 @@ using SimpleIpc.Shared;
 
 namespace SimpleIpc.Client
 {
-    public class PublisherClient : ClientConnection, IPublisherClient
+    public class PublisherClient : IPublisherClient
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private readonly ClientConnection _connection;
 
-        public PublisherClient(string ipAddress = null, int port = 13001) : base(ipAddress, port)
+        public PublisherClient(string ipAddress = null, int port = 13001)
         {
+            _connection = new ClientConnection(ipAddress, port);
             Log.Info("Creating new publisher");
         }
 
         public void Connect()
         {
             Log.Info("Connecting to server");
-            ConnectToServer();
+            _connection.ConnectToServer();
             Log.Info("Registering as publisher");
-            InitSend();
-            SendControl(ControlBytes.RegisterPublisher);
-            Log.Info("Successfully connected and registered");
+            _connection.InitSend();
+            _connection.SendControl(ControlBytes.RegisterPublisher);
+            Log.Info("Successfully connected to server and registered");
         }
 
         public void Send(string message)
         {
-            Log.Debug($"Sending message ({message})");
-            var delimitedMessage = DelimitationProvider.Delimit(message);
-            _sendDataSubject.OnNext(delimitedMessage);
+            Log.Info($"Sending message ({message})");
+            _connection.SendData(message);
         }
 
         public void Publish(string channelId)
         {
             Log.Info($"Publishing to ({channelId})");
-            SendControl(ControlBytes.Publish, channelId);
+            _connection.SendControl(ControlBytes.Publish, channelId);
         }
 
         public void Unpublish(string channelId)
         {
             Log.Info($"Unpublishing from ({channelId})");
-            SendControl(ControlBytes.Unpublish, channelId);
+            _connection.SendControl(ControlBytes.Unpublish, channelId);
+        }
+
+        public void Dispose()
+        {
+            _connection.Dispose();
         }
     }
 }

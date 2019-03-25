@@ -8,7 +8,7 @@ using SimpleIpc.Shared;
 
 namespace SimpleIpc.Server
 {
-    internal class ServerConnection : Connection
+    internal sealed class ServerConnection : Connection
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
