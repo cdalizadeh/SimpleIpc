@@ -7,12 +7,12 @@ using log4net;
 namespace SimpleIpc.Shared
 {
     /// <summary>
-    /// Abstract wrapper class around a Socket. Exposes IO as Rx Subjects. Delimits messages.
+    /// Abstract wrapper class around a Socket. Exposes IO as Rx Subjects.
     /// </summary>
     internal abstract class Connection : IDisposable
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private const int _maxIncomingMessageLength = 1024;
+        private const int MaxIncomingMessageLength = 1024;
         private volatile bool _disposed = false;
         private volatile bool _receiving = false;
         private volatile bool _sending = false;
@@ -22,7 +22,7 @@ namespace SimpleIpc.Shared
         protected Subject<byte[]> _dataReceivedSubject = new Subject<byte[]>();
 
         /// <summary>
-        /// Creates a socket subscription to _sendDataSubject, enabling Connection to send data
+        /// Enables data transmission when <see cref="_sendDataSubject"> emits a new data block.
         /// </summary>
         public void InitSend()
         {
@@ -37,9 +37,8 @@ namespace SimpleIpc.Shared
 
                     _socket.Send(bytes);
                 };
-                Action<Exception> onError = (e) => Log.Error("Error in send subscription", e);
                 Action onCompleted = () => Log.Info("Send subscription completed");
-                _sendDataSubject.Subscribe(onNext, onError, onCompleted);
+                _sendDataSubject.Subscribe(onNext, onCompleted);
             }
             else
             {
@@ -48,7 +47,7 @@ namespace SimpleIpc.Shared
         }
 
         /// <summary>
-        /// Starts the receive loop, enabling the connection socket to receive messages and publish them to _dataReceivedSubject
+        /// Starts the receive loop, enabling the socket to receive messages and publish them to <see cref="_dataReceivedSubject">
         /// </summary>
         public void InitReceive()
         {
@@ -56,7 +55,7 @@ namespace SimpleIpc.Shared
             {
                 Log.Info("Initializing receive loop");
                 _receiving = true;
-                Task.Run(() => ReceiveLoopAsync());
+                Task.Run(() => ReceiveLoopAsync()); // Errors caught in ReceiveLoopAsync
             }
             else
             {
@@ -64,13 +63,9 @@ namespace SimpleIpc.Shared
             }
         }
 
-        /// <summary>
-        /// Runs a socket receive loop. Kicked off by InitReceive()
-        /// </summary>
-        /// <returns>The async completion task</returns>
         private async Task ReceiveLoopAsync()
         {
-            byte[] receiveBuffer = new byte[_maxIncomingMessageLength];
+            byte[] receiveBuffer = new byte[MaxIncomingMessageLength];
 
             try
             {
@@ -123,9 +118,7 @@ namespace SimpleIpc.Shared
             }
         }
 
-        /// <summary>
-        /// Safely disposes of the Connection object
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose(){
             if (!_disposed)
             {

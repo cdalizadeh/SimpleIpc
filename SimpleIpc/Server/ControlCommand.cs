@@ -4,6 +4,9 @@ using SimpleIpc.Shared;
 
 namespace SimpleIpc.Server
 {
+    /// <summary>
+    /// A struct that represents a command received from a publisher or subscriber.
+    /// </summary>
     internal struct ControlCommand
     {
         public ControlBytes Control {get; set;}

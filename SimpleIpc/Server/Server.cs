@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace SimpleIpc.Server
 {
+    /// <summary>
+    /// An IPC server. Manages remote connections, publications, subscriptions, and channels.
+    /// </summary>
     public class Server
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -21,12 +24,19 @@ namespace SimpleIpc.Server
 
         private Dictionary<string, Channel> _channels = new Dictionary<string, Channel>();
 
+        /// <summary>
+        /// Create a new <see cref="Server">.
+        /// </summary>
+        /// <param name="port">The port on which the server will listen</param>
         public Server(int port = 13001)
         {
             Log.Info("Creating new server");
             _port = port;
         }
 
+        /// <summary>
+        /// Begins listening for incoming connections.
+        /// </summary>
         public void StartListening()
         {
             if (!_listening)
@@ -104,6 +114,10 @@ namespace SimpleIpc.Server
             InitializeISubscriber(subscriber);
         }
 
+        /// <summary>
+        /// Creates a new <see cref="ISubscriberClient"> running within the same process.
+        /// </summary>
+        /// <returns>The new subscriber client</returns>
         public ISubscriberClient CreateLocalSubscriber()
         {
             Log.Info("Creating local subscriber client");
@@ -113,6 +127,10 @@ namespace SimpleIpc.Server
             return subscriber;
         }
 
+        /// <summary>
+        /// Creates a new <see cref="IPublisherClient"> running within the same process.
+        /// </summary>
+        /// <returns>The new publisher client</returns>
         public IPublisherClient CreateLocalPublisher()
         {
             Log.Info("Creating local publisher client");

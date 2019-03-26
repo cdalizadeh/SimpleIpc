@@ -8,6 +8,9 @@ using SimpleIpc.Shared;
 
 namespace SimpleIpc.Server
 {
+    /// <summary>
+    /// A connection object to use within the IPC server.
+    /// </summary>
     internal sealed class ServerConnection : Connection
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);

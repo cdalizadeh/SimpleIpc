@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace SimpleIpc.Server
 {
+    /// <summary>
+    /// An internal server representation of a channel.
+    /// </summary>
     internal class Channel
     {
         private List<ISubscriber> _subscribers = new List<ISubscriber>();

@@ -2,6 +2,9 @@
 
 namespace SimpleIpc.Server
 {
+    /// <summary>
+    /// An internal server representation of a subscriber.
+    /// </summary>
     internal interface ISubscriber
     {
         IObserver<string> MessageObserver {get;}

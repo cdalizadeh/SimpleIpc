@@ -6,6 +6,9 @@ using SimpleIpc.Shared;
 
 namespace SimpleIpc.Server
 {
+    /// <summary>
+    /// The server-side representation of a subscriber client.
+    /// </summary>
     internal class RemoteSubscriber : ISubscriber
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);

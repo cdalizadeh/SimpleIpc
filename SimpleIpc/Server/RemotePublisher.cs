@@ -5,6 +5,9 @@ using SimpleIpc.Shared;
 
 namespace SimpleIpc.Server
 {
+    /// <summary>
+    /// The server-side representation of a publisher client.
+    /// </summary>
     internal class RemotePublisher : IPublisher
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);

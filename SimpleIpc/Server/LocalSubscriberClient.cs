@@ -4,6 +4,9 @@ using SimpleIpc.Shared;
 
 namespace SimpleIpc.Server
 {
+    /// <summary>
+    /// A subscriber client running in the same process as the server. Publicy exposed through the ISubscriberClient interface.
+    /// </summary>
     internal class LocalSubscriberClient : ISubscriberClient, ISubscriber
     {
         private Subject<string> _messageSubject = new Subject<string>();
@@ -17,21 +20,27 @@ namespace SimpleIpc.Server
         public IObservable<string> SubscribeReceived => _subscribeReceived;
         public IObservable<string> UnsubscribeReceived => _unsubscribeReceived;
 
+        /// <summary>
+        /// Creates a new <see cref="LocalSubscriberClient">.
+        /// </summary>
         public LocalSubscriberClient()
         {
 
         }
 
+        /// <inheritdoc />
         public void Subscribe(string channelId)
         {
             _subscribeReceived.OnNext(channelId);
         }
 
+        /// <inheritdoc />
         public void Unsubscribe(string channelId)
         {
             _unsubscribeReceived.OnNext(channelId);
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             throw new NotImplementedException();

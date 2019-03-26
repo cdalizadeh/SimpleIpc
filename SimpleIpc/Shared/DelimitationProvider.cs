@@ -4,6 +4,9 @@ using System.Text;
 
 namespace SimpleIpc.Shared
 {
+    /// <summary>
+    /// A static class that provides data serialization and delimitation for TCP networking.
+    /// </summary>
     internal static class DelimitationProvider
     {
         internal static byte[] Delimit(string data)

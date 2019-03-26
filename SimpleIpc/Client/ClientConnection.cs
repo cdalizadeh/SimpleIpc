@@ -8,6 +8,9 @@ using System.Text;
 
 namespace SimpleIpc.Client
 {
+    /// <summary>
+    /// A connection object to use within IPC clients
+    /// </summary>
     internal sealed class ClientConnection : Connection
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
