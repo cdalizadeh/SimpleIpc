@@ -3,6 +3,7 @@ using log4net;
 using System;
 using SimpleIpc.Server;
 using SimpleIpc.Shared;
+using System.Net;
 
 namespace TestServer
 {
@@ -22,7 +23,9 @@ namespace TestServer
         private static void StartWithOptions(CommandLineOptions opts)
         {
             Log.Info("Starting test server");
-            Server server = new Server();
+            var ipAddress = Dns.GetHostEntry(opts.Hostname).AddressList[0];
+            Log.Info(Dns.GetHostEntry(opts.Hostname).AddressList.Length);
+            Server server = new Server(ipAddress);
             server.StartListening();
 
             if (opts.CreateLocalPublisher)

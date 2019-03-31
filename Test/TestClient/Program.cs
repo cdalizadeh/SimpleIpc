@@ -2,6 +2,7 @@
 using log4net;
 using SimpleIpc.Client;
 using System;
+using System.Net;
 
 namespace TestClient
 {
@@ -30,7 +31,8 @@ namespace TestClient
         private static void StartPublisherClient(CommandLineOptions opts)
         {
             Log.Info("Starting test client as Publisher");
-            PublisherClient publisher = new PublisherClient(opts.IpAddress, opts.Port);
+            var ipAddress = Dns.GetHostEntry(opts.Hostname).AddressList[0];
+            PublisherClient publisher = new PublisherClient(ipAddress, opts.Port);
             publisher.Connect();
             publisher.Publish("test-channel");
 
@@ -64,10 +66,11 @@ namespace TestClient
         private static void StartSubscriberClient(CommandLineOptions opts)
         {
             Log.Info("Starting test client as Subscriber");
-            SubscriberClient subscriber = new SubscriberClient(opts.IpAddress, opts.Port);
+            var ipAddress = Dns.GetHostEntry(opts.Hostname).AddressList[0];
+            SubscriberClient subscriber = new SubscriberClient(ipAddress, opts.Port);
             subscriber.Connect();
             subscriber.Subscribe("test-channel");
-            subscriber.MessageReceived.Subscribe((s) => Log.Debug($"Received Message: {s}"));
+            subscriber.MessageReceived.Subscribe((s) => Log.Info($"Received Message: {s}"));
             
             Log.Info("Waiting");
             while (true)

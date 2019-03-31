@@ -20,24 +20,21 @@ namespace SimpleIpc.Client
         public IObservable<string> MessageReceived => _dataReceivedSubject
             .Select(bytes => Encoding.ASCII.GetString(bytes, 0, bytes.Length));
 
-        public ClientConnection(string ipAddress, int port)
+        public ClientConnection(int port)
         {
             _port = port;
+            _ipAddress = NetworkDefaults.LoopbackIPAddress;
+        }
 
-            if (ipAddress == null)
-            {
-                IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-                _ipAddress = ipHostInfo.AddressList[0];
-            }
-            else
-            {
-                _ipAddress = IPAddress.Parse(ipAddress);
-            }
+        public ClientConnection(IPAddress ipAddress, int port)
+        {
+            _port = port;
+            _ipAddress = ipAddress;
         }
 
         public void ConnectToServer()
         {
-            Log.Debug("Establishing a connection");
+            Log.Debug("Connecting to server");
             IPEndPoint remoteEP = new IPEndPoint(_ipAddress, _port);
 
             _socket = new Socket(_ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
@@ -46,7 +43,9 @@ namespace SimpleIpc.Client
 
         public void SendControl(ControlBytes controlByte, string message = null)
         {
-            Log.Debug($"Sending control (byte = {controlByte}, message = {message})");
+            if (message != null) Log.Debug($"Sending control (byte = {controlByte}, message = {message})");
+            else Log.Debug($"Sending control (byte = {controlByte})");
+            
             byte[] bytesToSend;
             if (message != null)
             {

@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using log4net;
 using SimpleIpc.Shared;
 
@@ -18,12 +19,22 @@ namespace SimpleIpc.Client
         /// <summary>
         /// Creates a new <see cref="SubscriberClient">.
         /// </summary>
-        /// <param name="ipAddress">The IP address to connect to. Null indicates a connection to localhost</param>
+        /// <param name="ipAddress">The IP address to connect to</param>
         /// <param name="port">The port to connect to</param>
-        public SubscriberClient(string ipAddress = null, int port = 13001)
+        public SubscriberClient(IPAddress ipAddress, int port = NetworkDefaults.DefaultPort)
         {
+            Log.Info($"Creating new subscriber (IPAdress = {ipAddress}, port = {port})");
             _connection = new ClientConnection(ipAddress, port);
-            Log.Info("Creating new subscriber");
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="SubscriberClient"> that connects to the loopback network interface.
+        /// </summary>
+        /// <param name="port">The port to connect to</param>
+        public SubscriberClient(int port = NetworkDefaults.DefaultPort)
+        {
+            Log.Info($"Creating new subscriber (IPAdress = localhost, port = {port})");
+            _connection = new ClientConnection(port);
         }
 
         /// <summary>

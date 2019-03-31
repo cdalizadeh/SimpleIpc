@@ -19,19 +19,35 @@ namespace SimpleIpc.Server
         
         private object _syncRoot = new object();
         private readonly int _port;
+        private readonly IPAddress _ipAddress;
         private Socket _listener;
         private bool _listening = false;
 
         private Dictionary<string, Channel> _channels = new Dictionary<string, Channel>();
 
         /// <summary>
-        /// Create a new <see cref="Server">.
+        /// Creates a new <see cref="Server">.
+        /// </summary>
+        /// <param name="ipAddress">The IP address to create the TCP socket endpoint at</param>
+        /// <param name="port">The port on which the server will listen</param>
+        public Server(IPAddress ipAddress, int port = NetworkDefaults.DefaultPort)
+        {
+            Log.Info($"Creating new IPC server (IPAdress = {ipAddress}, port = {port})");
+            _port = port;
+            _ipAddress = ipAddress;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="Server"> on the loopback network interface.
         /// </summary>
         /// <param name="port">The port on which the server will listen</param>
-        public Server(int port = 13001)
+        public Server(int port = NetworkDefaults.DefaultPort)
         {
-            Log.Info("Creating new server");
+            var ipAddress = NetworkDefaults.LoopbackIPAddress;
+
+            Log.Info($"Creating new IPC server (IPAdress = {ipAddress}, port = {port})");
             _port = port;
+            _ipAddress = ipAddress;
         }
 
         /// <summary>
@@ -44,11 +60,8 @@ namespace SimpleIpc.Server
                 Log.Info("Listening for connections");
                 _listening = true;
 
-                IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-                IPAddress ipAddress = ipHostInfo.AddressList[0];
-                IPEndPoint localEndPoint = new IPEndPoint(ipAddress, _port);
-
-                _listener = new Socket(ipAddress.AddressFamily,
+                IPEndPoint localEndPoint = new IPEndPoint(_ipAddress, _port);
+                _listener = new Socket(_ipAddress.AddressFamily,
                     SocketType.Stream, ProtocolType.Tcp);
 
                 _listener.Bind(localEndPoint);

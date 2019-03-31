@@ -1,3 +1,4 @@
+using System.Net;
 using log4net;
 using SimpleIpc.Shared;
 
@@ -14,12 +15,22 @@ namespace SimpleIpc.Client
         /// <summary>
         /// Creates a new <see cref="PublisherClient">.
         /// </summary>
-        /// <param name="ipAddress">The IP address to connect to. Null indicates a connection to localhost</param>
+        /// <param name="ipAddress">The IP address to connect to</param>
         /// <param name="port">The port to connect to</param>
-        public PublisherClient(string ipAddress = null, int port = 13001)
+        public PublisherClient(IPAddress ipAddress, int port = NetworkDefaults.DefaultPort)
         {
+            Log.Info($"Creating new publisher (IPAdress = {ipAddress}, port = {port})");
             _connection = new ClientConnection(ipAddress, port);
-            Log.Info("Creating new publisher");
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="PublisherClient"> that connects to the loopback network interface.
+        /// </summary>
+        /// <param name="port">The port to connect to</param>
+        public PublisherClient(int port = NetworkDefaults.DefaultPort)
+        {
+            Log.Info($"Creating new publisher (IPAdress = localhost, port = {port})");
+            _connection = new ClientConnection(port);
         }
 
         /// <summary>
