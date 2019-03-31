@@ -23,7 +23,15 @@ namespace TestServer
         private static void StartWithOptions(CommandLineOptions opts)
         {
             Log.Info("Starting test server");
-            var ipAddress = Dns.GetHostEntry(opts.Hostname).AddressList[0];
+            IPAddress ipAddress;
+            try
+            {
+                ipAddress = IPAddress.Parse(opts.Hostname);
+            }
+            catch(Exception)
+            {
+                ipAddress = Dns.GetHostEntry(opts.Hostname).AddressList[0];
+            }
             Server server = new Server(ipAddress);
             server.StartListening();
 
