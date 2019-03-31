@@ -24,7 +24,6 @@ namespace TestServer
         {
             Log.Info("Starting test server");
             var ipAddress = Dns.GetHostEntry(opts.Hostname).AddressList[0];
-            Log.Info(Dns.GetHostEntry(opts.Hostname).AddressList.Length);
             Server server = new Server(ipAddress);
             server.StartListening();
 
