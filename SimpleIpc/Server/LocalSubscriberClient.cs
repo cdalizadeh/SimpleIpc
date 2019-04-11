@@ -13,6 +13,7 @@ namespace SimpleIpc.Server
         private readonly Subject<string> _subscribeReceived = new Subject<string>();
         private readonly Subject<string> _unsubscribeReceived = new Subject<string>();
 
+        /// <inheritdoc /> 
         public IObservable<string> MessageReceived => _messageSubject;
 
         public IObserver<string> MessageObserver => _messageSubject;
@@ -23,7 +24,7 @@ namespace SimpleIpc.Server
         /// <summary>
         /// Creates a new <see cref="LocalSubscriberClient">.
         /// </summary>
-        public LocalSubscriberClient()
+        internal LocalSubscriberClient()
         {
 
         }
@@ -43,7 +44,9 @@ namespace SimpleIpc.Server
         /// <inheritdoc />
         public void Dispose()
         {
-            throw new NotImplementedException();
+            _messageSubject.Dispose();
+            _subscribeReceived.Dispose();
+            _unsubscribeReceived.Dispose();
         }
     }
 }

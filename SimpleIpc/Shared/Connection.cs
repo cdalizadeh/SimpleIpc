@@ -37,7 +37,7 @@ namespace SimpleIpc.Shared
 
                     _socket.Send(bytes);
                 };
-                Action onCompleted = () => Log.Info("Send subscription completed");
+                Action onCompleted = () => Log.Debug("Send subscription completed");
                 _sendDataSubject.Subscribe(onNext, onCompleted);
             }
             else

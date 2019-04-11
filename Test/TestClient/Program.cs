@@ -60,7 +60,8 @@ namespace TestClient
                     publisher.Send(newLine);
                 }
             }
-            Log.Info("Terminating PublisherClient test program");
+            Log.Info("PublisherClient test program complete");
+            Console.ReadKey();
         }
 
         private static void StartSubscriberClient(CommandLineOptions opts)
@@ -92,7 +93,8 @@ namespace TestClient
                     subscriber.Unsubscribe(newLineSplit[1]);
                 }
             }
-            Log.Info("Terminating SubscriberClient test program");
+            Log.Info("SubscriberClient test program complete");
+            Console.ReadKey();
         }
     }
 }

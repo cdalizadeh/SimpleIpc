@@ -20,7 +20,7 @@ namespace SimpleIpc.Server
         /// <summary>
         /// Creates a new <see cref="LocalPublisherClient">.
         /// </summary>
-        public LocalPublisherClient()
+        internal LocalPublisherClient()
         {
 
         }
@@ -46,7 +46,9 @@ namespace SimpleIpc.Server
         /// <inheritdoc />
         public void Dispose()
         {
-            throw new NotImplementedException();
+            _messageReceived.Dispose();
+            _publishReceived.Dispose();
+            _unpublishReceived.Dispose();
         }
     }
 }
