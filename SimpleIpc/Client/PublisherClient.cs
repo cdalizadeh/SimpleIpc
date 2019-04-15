@@ -41,7 +41,6 @@ namespace SimpleIpc.Client
             Log.Info("Connecting to server");
             _connection.ConnectToServer();
             Log.Info("Registering as publisher");
-            _connection.InitSend();
             _connection.SendControl(ControlBytes.RegisterPublisher);
             Log.Info("Successfully connected to server and registered");
         }
@@ -50,7 +49,7 @@ namespace SimpleIpc.Client
         public void Send(string message)
         {
             Log.Info($"Sending message ({message})");
-            _connection.SendData(message);
+            _connection.SendMessage(message);
         }
 
         /// <inheritdoc />

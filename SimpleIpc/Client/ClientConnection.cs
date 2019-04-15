@@ -46,22 +46,17 @@ namespace SimpleIpc.Client
             if (message != null) Log.Debug($"Sending control (byte = {controlByte}, message = {message})");
             else Log.Debug($"Sending control (byte = {controlByte})");
             
-            byte[] bytesToSend;
-            if (message != null)
-            {
-                bytesToSend = DelimitationProvider.Delimit(message, (byte)ControlBytes.Escape, (byte)controlByte);
-            }
-            else
-            {
-                bytesToSend = DelimitationProvider.Delimit((byte)ControlBytes.Escape, (byte)(controlByte));
-            }
-            _sendDataSubject.OnNext(bytesToSend);
+            var bytesToSend = (message == null) ?
+                DelimitationProvider.Delimit((byte)ControlBytes.Escape, (byte)(controlByte)) :
+                DelimitationProvider.Delimit(message, (byte)ControlBytes.Escape, (byte)controlByte);
+
+            SendData(bytesToSend);
         }
 
-        public void SendData(string data)
+        public void SendMessage(string data)
         {
             var delimitedData = DelimitationProvider.Delimit(data);
-            _sendDataSubject.OnNext(delimitedData);
+            SendData(delimitedData);
         }
     }
 }

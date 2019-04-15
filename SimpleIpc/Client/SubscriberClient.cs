@@ -45,7 +45,6 @@ namespace SimpleIpc.Client
             Log.Info("Connecting to server");
             _connection.ConnectToServer();
             Log.Info("Registering as subscriber");
-            _connection.InitSend();
             _connection.InitReceive();
             _connection.SendControl(ControlBytes.RegisterSubscriber);
             Log.Info("Successfully connected to server and registered");

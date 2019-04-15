@@ -15,35 +15,19 @@ namespace SimpleIpc.Shared
         private const int MaxIncomingMessageLength = 1024;
         private volatile bool _disposed = false;
         private volatile bool _receiving = false;
-        private volatile bool _sending = false;
 
         protected Socket _socket;
-        protected Subject<byte[]> _sendDataSubject = new Subject<byte[]>();
         protected Subject<byte[]> _dataReceivedSubject = new Subject<byte[]>();
 
         /// <summary>
-        /// Enables data transmission when <see cref="_sendDataSubject"> emits a new data block.
+        /// Sends a byte array.
         /// </summary>
-        public void InitSend()
+        /// <param name="bytes">The byte array</param>
+        public void SendData(byte[] bytes)
         {
-            if (!_sending)
-            {
-                Log.Info("Initializing send loop");
-                _sending = true;
-                Action<byte[]> onNext = (bytes) => 
-                {
-                    // Check for empty string.
-                    if (bytes.Length == 1) return;
-
-                    _socket.Send(bytes);
-                };
-                Action onCompleted = () => Log.Debug("Send subscription completed");
-                _sendDataSubject.Subscribe(onNext, onCompleted);
-            }
-            else
-            {
-                Log.Warn($"{nameof(InitSend)} called more than once");
-            }
+            // Check for empty array.
+            if (bytes.Length == 1) return;
+            _socket.Send(bytes);
         }
 
         /// <summary>
@@ -128,8 +112,6 @@ namespace SimpleIpc.Shared
                 _socket?.Close();
                 _dataReceivedSubject.OnCompleted();
                 _dataReceivedSubject.Dispose();
-                _sendDataSubject.OnCompleted();
-                _sendDataSubject.Dispose();
             }
         }
     }

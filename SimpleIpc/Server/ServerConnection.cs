@@ -15,7 +15,6 @@ namespace SimpleIpc.Server
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public IObserver<byte[]> SendData => _sendDataSubject;
         public IObservable<string> MessageReceived => _dataReceivedSubject
             .Where(bytes => bytes[0] != (byte)ControlBytes.Escape)
             .Select(bytes => Encoding.ASCII.GetString(bytes, 0, bytes.Length));

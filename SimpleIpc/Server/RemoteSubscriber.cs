@@ -26,8 +26,6 @@ namespace SimpleIpc.Server
 
             SubscribeReceived = _connection.ControlReceived.Where((cc) => cc.Control == ControlBytes.Subscribe).Select((cc) => cc.Data);
             UnsubscribeReceived = _connection.ControlReceived.Where((cc) => cc.Control == ControlBytes.Unsubscribe).Select((cc) => cc.Data);
-
-            _connection.InitSend();
             
             _messageSubject.Select(message => DelimitationProvider.Delimit(message)).Subscribe(_connection.SendData);
         }
