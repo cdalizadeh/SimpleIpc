@@ -6,3 +6,4 @@ install:
 script:
  - dotnet build
  - dotnet test ./Test/UnitTests/UnitTests.csproj
+dist: xenial
